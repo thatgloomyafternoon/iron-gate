@@ -15,10 +15,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * When your application starts, Spring Boot's AuthenticationConfiguration (the class you used to
- * get the manager) scans your application context:
- * (1) Scan: It looks for a Bean that implements UserDetailsService.
- * (2) Found: It finds your UserDetailsUseCase bean.
- * (3) Wire: It automatically creates an instance of DaoAuthenticationProvider and injects your UserDetailsUseCase into it.
+ * get the manager) scans your application context:<br>
+ * (1) Scan: It looks for a Bean that implements UserDetailsService.<br>
+ * (2) Found: It finds your UserDetailsUseCase bean.<br>
+ * (3) Wire: It automatically creates an instance of DaoAuthenticationProvider and injects your UserDetailsUseCase into it.<br>
  * (4) Register: It registers this provider inside the global AuthenticationManager.
  */
 @Configuration
