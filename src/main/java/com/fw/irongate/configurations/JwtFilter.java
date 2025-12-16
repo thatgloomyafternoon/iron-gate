@@ -77,19 +77,19 @@ public class JwtFilter extends OncePerRequestFilter {
           return;
         }
         Optional<Sysconfig> optSysconfig =
-            sysconfigRepository.findOneActiveById(jwtClaimDTO.getRoleId());
+            sysconfigRepository.findOneActiveById(jwtClaimDTO.roleId());
         if (optSysconfig.isEmpty()) {
           setResponseStatusAndJson(response, HttpServletResponse.SC_BAD_REQUEST, JSON_INVALID_ROLE);
           return;
         } else if (!optSysconfig.get().getKey().equals(SYSTEM)
             && permissionRepository
-                .findAllActiveByRoleIdAndResourcePath(jwtClaimDTO.getRoleId(), uri)
+                .findAllActiveByRoleIdAndResourcePath(jwtClaimDTO.roleId(), uri)
                 .isEmpty()) {
           setResponseStatusAndJson(response, HttpServletResponse.SC_FORBIDDEN, JSON_FORBIDDEN);
           return;
         }
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-          UserDetails userDetails = userDetailsUseCase.loadUserByUsername(jwtClaimDTO.getEmail());
+          UserDetails userDetails = userDetailsUseCase.loadUserByUsername(jwtClaimDTO.email());
           UsernamePasswordAuthenticationToken authToken =
               new UsernamePasswordAuthenticationToken(
                   userDetails.getUsername(),
