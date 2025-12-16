@@ -1,6 +1,8 @@
-[] Global AuthenticationManager configured with an AuthenticationProvider bean startup warning log
-[] TestLoginUseCase
-[] TestUserDetailsUseCase
-[] TestCookieUtil
-[] TestJwtUtil
-[] TestAuthController
+- [v] Global AuthenticationManager configured with an AuthenticationProvider bean startup warning log
+- [v] TestLoginUseCase
+- [] use UUIDv7 instead of UUIDv4
+- [] update all dto and requests and responses into record
+- [] TestUserDetailsUseCase
+- [] TestCookieUtil
+- [] TestJwtUtil
+- [] TestAuthController
