@@ -1,8 +1,7 @@
 package com.fw.irongate.models.entities;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotBlank;
@@ -17,8 +16,7 @@ public abstract class BaseEntity {
 
   @Column(name = "id")
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private UUID id;
+  private UUID id = UuidCreator.getTimeOrderedEpoch();
 
   /**
    * NOTE: when using "nullable = false" (as opposed to @NotNull), hibernate will not do any
