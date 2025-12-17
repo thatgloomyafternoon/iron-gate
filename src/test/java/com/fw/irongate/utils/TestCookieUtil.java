@@ -19,7 +19,6 @@ class CookieUtilTest {
   @InjectMocks private CookieUtil cookieUtil;
 
   /* Define constants for testing */
-  private static final String TEST_COOKIE_NAME = "auth_cookie";
   private static final long TEST_EXPIRY_MS = 900000L; /* 15 minutes (900,000 ms) */
 
   @BeforeEach
