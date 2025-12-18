@@ -22,7 +22,7 @@ public class CookieUtil {
         .build();
   }
 
-  public ResponseCookie createExpiredCookie() {
+  public ResponseCookie createEmptyCookie() {
     return ResponseCookie.from(COOKIE_NAME, null)
         .path("/")
         .maxAge(0) /* Set to 0 to invalidate the cookie */
