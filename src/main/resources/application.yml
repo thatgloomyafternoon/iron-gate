@@ -1,0 +1,20 @@
+spring:
+  profiles:
+    active: prod    # [prod | local]
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none    # [create | create-drop | update | validate | none]
+    show-sql: false
+    properties:
+      hibernate:
+        column_ordering_strategy: legacy
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiry_in_millisecond: ${JWT_EXPIRY_IN_MILLISECOND}
+  issuer: ${JWT_ISSUER}
