@@ -24,7 +24,7 @@ public class LoginUseCase {
     this.jwtUtil = jwtUtil;
   }
 
-  public ResponseCookie execute(LoginRequest request) {
+  public ResponseCookie handle(LoginRequest request) {
     Authentication authentication =
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.email(), request.password()));
