@@ -63,7 +63,7 @@ class LoginUseCaseTest {
     ResponseCookie expectedCookie = ResponseCookie.from("auth_cookie", expectedJwt).build();
     given(cookieUtil.createFreshCookie(expectedJwt)).willReturn(expectedCookie);
     /* --- When --- */
-    ResponseCookie actualCookie = loginUseCase.execute(request);
+    ResponseCookie actualCookie = loginUseCase.handle(request);
     /* --- Then --- */
     assertEquals(expectedCookie, actualCookie);
     /* CRITICAL: Verify parameter mapping */
@@ -86,7 +86,7 @@ class LoginUseCaseTest {
     given(authenticationManager.authenticate(any()))
         .willThrow(new BadCredentialsException("Bad credentials"));
     /* --- When & Then --- */
-    assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(request));
+    assertThrows(BadCredentialsException.class, () -> loginUseCase.handle(request));
     /* Verify we never tried to generate a token */
     verify(jwtUtil, org.mockito.Mockito.never()).generateJwt(any(), any(), any(), any(), any());
   }
