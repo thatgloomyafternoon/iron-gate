@@ -3,6 +3,9 @@
 - [v] update all dto and requests and responses into record
 - [v] use UUIDv7 instead of UUIDv4
 - [v] TestUserDetailsUseCase
+- [v] construct Authentication object properly
+- [v] reduce database access by using FetchType.LAZY
 - [] TestCookieUtil
 - [] TestJwtUtil
 - [] TestAuthController
+- [] TestLogoutUseCase
