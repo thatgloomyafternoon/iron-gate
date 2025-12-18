@@ -9,8 +9,8 @@ import static com.fw.irongate.constants.SystemConstants.SYSTEM;
 import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.entities.Sysconfig;
 import com.fw.irongate.repositories.PermissionRepository;
+import com.fw.irongate.repositories.RevokedTokenRepository;
 import com.fw.irongate.repositories.SysconfigRepository;
-import com.fw.irongate.usecases.login.UserDetailsUseCase;
 import com.fw.irongate.utils.CookieUtil;
 import com.fw.irongate.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,7 +28,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -38,19 +38,19 @@ public class JwtFilter extends OncePerRequestFilter {
   private final CookieUtil cookieUtil;
   private final SysconfigRepository sysconfigRepository;
   private final PermissionRepository permissionRepository;
-  private final UserDetailsUseCase userDetailsUseCase;
+  private final RevokedTokenRepository revokedTokenRepository;
 
   public JwtFilter(
       JwtUtil jwtUtil,
       CookieUtil cookieUtil,
       SysconfigRepository sysconfigRepository,
       PermissionRepository permissionRepository,
-      UserDetailsUseCase userDetailsUseCase) {
+      RevokedTokenRepository revokedTokenRepository) {
     this.jwtUtil = jwtUtil;
     this.cookieUtil = cookieUtil;
     this.sysconfigRepository = sysconfigRepository;
     this.permissionRepository = permissionRepository;
-    this.userDetailsUseCase = userDetailsUseCase;
+    this.revokedTokenRepository = revokedTokenRepository;
   }
 
   @Override
@@ -69,8 +69,8 @@ public class JwtFilter extends OncePerRequestFilter {
               .orElse(null);
       if (jwt != null && !jwt.isBlank()) {
         JwtClaimDTO jwtClaimDTO = jwtUtil.validateJwt(jwt);
-        if (jwtClaimDTO == null || jwtUtil.checkIfJwtIsInvalid(jwt)) {
-          ResponseCookie cookie = cookieUtil.createExpiredCookie();
+        if (jwtClaimDTO == null || revokedTokenRepository.existsByJwt(jwt)) {
+          ResponseCookie cookie = cookieUtil.createEmptyCookie();
           response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
           setResponseStatusAndJson(
               response, HttpServletResponse.SC_UNAUTHORIZED, JSON_UNAUTHORIZED);
@@ -89,16 +89,9 @@ public class JwtFilter extends OncePerRequestFilter {
           return;
         }
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-          UserDetails userDetails = userDetailsUseCase.loadUserByUsername(jwtClaimDTO.email());
           UsernamePasswordAuthenticationToken authToken =
-              new UsernamePasswordAuthenticationToken(
-                  userDetails.getUsername(),
-                  userDetails.getPassword(),
-                  userDetails.getAuthorities());
+              new UsernamePasswordAuthenticationToken(jwtClaimDTO, null, Collections.emptyList());
           SecurityContextHolder.getContext().setAuthentication(authToken);
-          ((UsernamePasswordAuthenticationToken)
-                  (SecurityContextHolder.getContext().getAuthentication()))
-              .setDetails(jwtClaimDTO);
         }
       }
     }
