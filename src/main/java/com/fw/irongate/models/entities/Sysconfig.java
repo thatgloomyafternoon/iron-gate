@@ -2,6 +2,7 @@ package com.fw.irongate.models.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -13,7 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 public class Sysconfig extends BaseEntity {
 
   @JoinColumn(name = "sysconfig_type_id", nullable = false)
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   private SysconfigType sysconfigType;
 
   @Column(name = "key", nullable = false)

@@ -13,6 +13,8 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
           "SELECT p FROM Permission p "
               + "JOIN FETCH Sysconfig r ON p.role.id = r.id "
               + "JOIN FETCH Sysconfig rp ON p.resourcePath.id = rp.id "
+              + "JOIN FETCH SysconfigType rst ON r.sysconfigType.id = rst.id "
+              + "JOIN FETCH SysconfigType rpst ON rp.sysconfigType.id = rpst.id "
               + "WHERE r.id = ?1 AND "
               + "rp.value = ?2 AND "
               + "p.deletedAt IS NULL AND "
