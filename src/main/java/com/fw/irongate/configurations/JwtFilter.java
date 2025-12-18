@@ -1,5 +1,6 @@
 package com.fw.irongate.configurations;
 
+import static com.fw.irongate.constants.MessageConstants.USER_ALREADY_LOGGED_OUT;
 import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
 import static com.fw.irongate.constants.SystemConstants.JSON_FORBIDDEN;
 import static com.fw.irongate.constants.SystemConstants.JSON_INVALID_ROLE;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
@@ -34,6 +37,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
+  private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
   private final SysconfigRepository sysconfigRepository;
@@ -69,11 +73,17 @@ public class JwtFilter extends OncePerRequestFilter {
               .orElse(null);
       if (jwt != null && !jwt.isBlank()) {
         JwtClaimDTO jwtClaimDTO = jwtUtil.validateJwt(jwt);
-        if (jwtClaimDTO == null || revokedTokenRepository.existsByJwt(jwt)) {
+        if (jwtClaimDTO == null) {
+          setResponseStatusAndJson(
+              response, HttpServletResponse.SC_UNAUTHORIZED, JSON_UNAUTHORIZED);
+          return;
+        }
+        if (revokedTokenRepository.existsByJwt(jwt)) {
           ResponseCookie cookie = cookieUtil.createEmptyCookie();
           response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
           setResponseStatusAndJson(
               response, HttpServletResponse.SC_UNAUTHORIZED, JSON_UNAUTHORIZED);
+          log.warn(USER_ALREADY_LOGGED_OUT, jwtClaimDTO.email());
           return;
         }
         Optional<Sysconfig> optSysconfig =
