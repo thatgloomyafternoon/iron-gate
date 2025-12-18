@@ -6,6 +6,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+/**
+ * General Rule:<br>
+ * Always default to LAZY for @ManyToOne fetch type.<br>
+ * If you get a LazyInitializationException later,<br>
+ * it means you forgot to use JOIN FETCH in your repository query.
+ */
 @SuppressWarnings("unused")
 @Table(name = "permissions")
 @Entity
