@@ -1,6 +1,7 @@
 package com.fw.irongate.models.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -11,11 +12,11 @@ import jakarta.persistence.Table;
 public class Permission extends BaseEntity {
 
   @JoinColumn(name = "role_id", nullable = false)
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   private Sysconfig role;
 
   @JoinColumn(name = "resource_path_id", nullable = false)
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   private Sysconfig resourcePath;
 
   public Sysconfig getRole() {
