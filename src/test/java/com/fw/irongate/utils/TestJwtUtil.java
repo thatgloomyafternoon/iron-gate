@@ -111,8 +111,6 @@ class TestJwtUtil {
     /* The Algorithm.HMAC256(null) call throws IllegalArgumentException */
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          jwtUtil.generateJwt("1", "mail", "1", "role", "name");
-        });
+        () -> jwtUtil.generateJwt("1", "mail", "1", "role", "name"));
   }
 }
