@@ -10,3 +10,6 @@
 - [v] TestApiAuthLogin
 - [v] TestLogoutUseCase
 - [v] TestApiAuthLogout
+- [v] react login page
+- [v] react dashboard
+- [v] update users (admin, manager, driver)
