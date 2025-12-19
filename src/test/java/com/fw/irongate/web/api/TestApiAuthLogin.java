@@ -72,10 +72,7 @@ class TestApiAuthLogin {
     /* (to be caught by @ControllerAdvice in the real app) */
     RuntimeException thrown =
         assertThrows(
-            RuntimeException.class,
-            () -> {
-              authController.login(request, httpServletResponse);
-            });
+            RuntimeException.class, () -> authController.login(request, httpServletResponse));
     assertEquals("Invalid Credentials", thrown.getMessage());
     /* Verify we never tried to set the header since it crashed first */
     verify(httpServletResponse, never()).addHeader(anyString(), anyString());
