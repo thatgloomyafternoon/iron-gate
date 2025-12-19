@@ -45,11 +45,15 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/")
                     .permitAll()
-                    .requestMatchers("/index.html")
-                    .permitAll()
-                    .requestMatchers("/assets/")
-                    .permitAll()
-                    .requestMatchers("/static/")
+                    .requestMatchers(
+                        "/index.html",
+                        "/assets/**",
+                        "/static/**",
+                        "/*.js",
+                        "/*.css",
+                        "/*.ico",
+                        "/*.png",
+                        "/*.svg")
                     .permitAll()
                     .requestMatchers("/api/auth/login")
                     .permitAll()
