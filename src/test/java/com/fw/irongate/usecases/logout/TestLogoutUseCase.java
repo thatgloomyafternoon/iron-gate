@@ -27,13 +27,9 @@ import org.springframework.http.ResponseCookie;
 class TestLogoutUseCase {
 
   @Mock private JwtUtil jwtUtil;
-
   @Mock private RevokedTokenRepository revokedTokenRepository;
-
   @Mock private CookieUtil cookieUtil;
-
   @InjectMocks private LogoutUseCase logoutUseCase;
-
   @Captor private ArgumentCaptor<RevokedToken> revokedTokenCaptor;
 
   @Test
