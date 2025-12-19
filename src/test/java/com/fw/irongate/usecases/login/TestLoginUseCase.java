@@ -28,7 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @ExtendWith(MockitoExtension.class)
-class LoginUseCaseTest {
+class TestLoginUseCase {
 
   @Mock private AuthenticationManager authenticationManager;
   @Mock private JwtUtil jwtUtil;

@@ -14,7 +14,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
-class CookieUtilTest {
+class TestCookieUtil {
 
   @InjectMocks private CookieUtil cookieUtil;
 
