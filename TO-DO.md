@@ -5,7 +5,8 @@
 - [v] TestUserDetailsUseCase
 - [v] construct Authentication object properly
 - [v] reduce database access by using FetchType.LAZY
-- [] TestCookieUtil
-- [] TestJwtUtil
-- [] TestAuthController
-- [] TestLogoutUseCase
+- [v] TestCookieUtil
+- [v] TestJwtUtil
+- [v] TestApiAuthLogin
+- [v] TestLogoutUseCase
+- [v] TestApiAuthLogout
