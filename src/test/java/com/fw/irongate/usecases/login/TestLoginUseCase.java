@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.fw.irongate.models.dto.SecurityUserDTO;
@@ -88,6 +89,6 @@ class TestLoginUseCase {
     /* --- When & Then --- */
     assertThrows(BadCredentialsException.class, () -> loginUseCase.handle(request));
     /* Verify we never tried to generate a token */
-    verify(jwtUtil, org.mockito.Mockito.never()).generateJwt(any(), any(), any(), any(), any());
+    verify(jwtUtil, never()).generateJwt(any(), any(), any(), any(), any());
   }
 }
