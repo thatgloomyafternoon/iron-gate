@@ -4,6 +4,7 @@ import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
 import static com.fw.irongate.constants.SystemConstants.OK;
 
 import com.fw.irongate.models.dto.JwtClaimDTO;
+import com.fw.irongate.models.dto.UserDTO;
 import com.fw.irongate.usecases.login.LoginUseCase;
 import com.fw.irongate.usecases.logout.LogoutUseCase;
 import com.fw.irongate.web.requests.LoginRequest;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +47,15 @@ public class AuthController {
       HttpServletResponse response) {
     response.addHeader(HttpHeaders.SET_COOKIE, logoutUseCase.handle(jwtClaimDTO, jwt).toString());
     return ResponseEntity.ok(new MessageResponse((OK)));
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<UserDTO> me(@AuthenticationPrincipal JwtClaimDTO jwtClaimDTO) {
+    return ResponseEntity.ok(
+        new UserDTO(
+            jwtClaimDTO.userId(),
+            jwtClaimDTO.email(),
+            jwtClaimDTO.roleName(),
+            jwtClaimDTO.fullName()));
   }
 }
