@@ -13,7 +13,6 @@ import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.entities.Product;
 import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.web.responses.IdResponse;
-import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,64 +27,74 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CreateProductUseCaseTest {
 
   @Mock private ProductRepository productRepository;
-
   @InjectMocks private CreateProductUseCase createProductUseCase;
 
-  @Test
-  void shouldCreateProductSuccessfully_WhenSkuIsUnique() {
-    /* 1. Arrange (Prepare data) */
-    CreateProductRequest request =
-        new CreateProductRequest("Test Product", "SKU-123", "Desc", new BigDecimal("100.00"), 10);
-    JwtClaimDTO userClaims =
-        new JwtClaimDTO(
-            UuidCreator.getTimeOrderedEpoch(),
-            "user@example.com",
-            UuidCreator.getTimeOrderedEpoch(),
-            "role",
-            "full name");
-    /* Mock: Repository finds nothing for this SKU (it's unique) */
-    when(productRepository.findBySku("SKU-123")).thenReturn(Optional.empty());
-    /* Mock: Repository returns a saved product with an ID */
-    UUID productId = UuidCreator.getTimeOrderedEpoch();
-    Product savedProduct = new Product();
-    savedProduct.setId(productId);
-    when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
-    /* 2. Act (Run the method) */
-    IdResponse response = createProductUseCase.handle(request, userClaims);
-    /* 3. Assert (Verify results) */
-    assertNotNull(response);
-    assertEquals(productId, response.id());
-    /* Verify that save was called with the correct data */
-    ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
-    verify(productRepository).save(productCaptor.capture());
-    Product capturedProduct = productCaptor.getValue();
-    assertEquals("user@example.com", capturedProduct.getCreatedBy());
-    assertEquals("SKU-123", capturedProduct.getSku());
-    assertEquals(new BigDecimal("100.00"), capturedProduct.getPriceUsd());
+  /* Helper to create a dummy valid request */
+  private CreateProductRequest createValidRequest() {
+    return new CreateProductRequest(
+        "Test Product", "SKU-123", "Description", new BigDecimal("100.00"), 10);
+  }
+
+  /* Helper to create dummy JWT claims */
+  private JwtClaimDTO createJwtClaims() {
+    return new JwtClaimDTO(
+        UUID.randomUUID(), "admin@example.com", UUID.randomUUID(), "ROLE_ADMIN", "Admin User");
   }
 
   @Test
-  void shouldThrowException_WhenSkuAlreadyExists() {
+  void handle_ShouldCreateProduct_WhenSkuIsUnique() {
     /* 1. Arrange */
-    CreateProductRequest request =
-        new CreateProductRequest("Duplicate Product", "SKU-EXISTING", "Desc", BigDecimal.TEN, 5);
-    JwtClaimDTO userClaims =
-        new JwtClaimDTO(
-            UuidCreator.getTimeOrderedEpoch(),
-            "user@example.com",
-            UuidCreator.getTimeOrderedEpoch(),
-            "role",
-            "full name");
-    /* Mock: Repository finds an EXISTING product */
-    when(productRepository.findBySku("SKU-EXISTING")).thenReturn(Optional.of(new Product()));
+    CreateProductRequest request = createValidRequest();
+    JwtClaimDTO jwt = createJwtClaims();
+    UUID generatedId = UUID.randomUUID();
+    /* Mock: SKU does not exist */
+    when(productRepository.findBySku(request.sku())).thenReturn(Optional.empty());
+    /* Mock: Save returns the product with a generated ID */
+    /* We assume the Product entity has basic setters/getters and an setId method */
+    when(productRepository.save(any(Product.class)))
+        .thenAnswer(
+            invocation -> {
+              Product p = invocation.getArgument(0);
+              p.setId(generatedId); /* Simulate DB generating UUID */
+              return p;
+            });
+    /* 2. Act */
+    IdResponse response = createProductUseCase.handle(request, jwt);
+    /* 3. Assert */
+    assertNotNull(response);
+    assertEquals(generatedId, response.id());
+    /* 4. Verify Data Mapping (Crucial step) */
+    ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+    verify(productRepository).save(productCaptor.capture());
+    Product capturedProduct = productCaptor.getValue();
+    /* Check Business Fields */
+    assertEquals(request.name(), capturedProduct.getName());
+    assertEquals(request.sku(), capturedProduct.getSku());
+    assertEquals(request.description(), capturedProduct.getDescription());
+    assertEquals(request.price(), capturedProduct.getPrice());
+    assertEquals(request.quantity(), capturedProduct.getQuantity());
+    /* Check Audit Fields (from JWT) */
+    assertEquals(jwt.email(), capturedProduct.getCreatedBy());
+    assertEquals(jwt.email(), capturedProduct.getUpdatedBy());
+  }
+
+  @Test
+  void handle_ShouldThrowException_WhenSkuAlreadyExists() {
+    /* 1. Arrange */
+    CreateProductRequest request = createValidRequest();
+    JwtClaimDTO jwt = createJwtClaims();
+    /* Mock: SKU ALREADY exists */
+    when(productRepository.findBySku(request.sku())).thenReturn(Optional.of(new Product()));
     /* 2. Act & Assert */
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> createProductUseCase.handle(request, userClaims));
-    /* Check the error message (Assuming SKU_ALREADY_EXISTS matches your constant) */
-    /* If your constant is public static, use CreateProductUseCase.SKU_ALREADY_EXISTS */
+            IllegalArgumentException.class,
+            () -> {
+              createProductUseCase.handle(request, jwt);
+            });
+    /* Optional: Verify message content if you have access to MessageConstants in test scope */
     assertEquals(SKU_ALREADY_EXISTS, exception.getMessage());
-    /* 3. Verify that save was NEVER called */
-    verify(productRepository, never()).save(any());
+    /* 3. Verify that SAVE was NEVER called */
+    verify(productRepository, never()).save(any(Product.class));
   }
 }
