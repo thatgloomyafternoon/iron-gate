@@ -5,9 +5,9 @@ import static com.fw.irongate.constants.SystemConstants.OK;
 
 import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.dto.UserDTO;
+import com.fw.irongate.usecases.login.LoginRequest;
 import com.fw.irongate.usecases.login.LoginUseCase;
 import com.fw.irongate.usecases.logout.LogoutUseCase;
-import com.fw.irongate.web.requests.LoginRequest;
 import com.fw.irongate.web.responses.MessageResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
