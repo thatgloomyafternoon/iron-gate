@@ -66,6 +66,22 @@ create table users (
   primary key (id)
 );
 
+create table products (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  description varchar(255),
+  name varchar(255) not null,
+  price_usd numeric(19,2) not null,
+  quantity integer not null,
+  sku varchar(255) not null unique,
+  primary key (id)
+);
+
 alter table if exists permissions
 add constraint FKgbbliiluax6e4bwk5qxohc2fy foreign key (resource_path_id) references sysconfigs;
 
