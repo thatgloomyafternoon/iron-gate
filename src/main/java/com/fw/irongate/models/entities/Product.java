@@ -21,9 +21,9 @@ public class Product extends BaseEntity {
   @Column(name = "description")
   private String description;
 
-  @Column(name = "price_usd", nullable = false, precision = 19, scale = 2)
+  @Column(name = "price", nullable = false, precision = 19, scale = 2)
   @Positive
-  private BigDecimal priceUsd;
+  private BigDecimal price;
 
   @Column(name = "quantity", nullable = false)
   @PositiveOrZero
@@ -53,12 +53,12 @@ public class Product extends BaseEntity {
     this.description = description;
   }
 
-  public BigDecimal getPriceUsd() {
-    return priceUsd;
+  public BigDecimal getPrice() {
+    return price;
   }
 
-  public void setPriceUsd(BigDecimal priceUsd) {
-    this.priceUsd = priceUsd;
+  public void setPrice(BigDecimal price) {
+    this.price = price;
   }
 
   public Integer getQuantity() {
