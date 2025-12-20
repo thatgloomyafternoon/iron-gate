@@ -13,5 +13,5 @@ public interface SystemConstants {
   String SYSTEM = "SYSTEM";
   String JSON_UNAUTHORIZED = "{\"error\":\"Unauthorized\"}";
   String JSON_INVALID_ROLE = "{\"error\":\"Invalid role\"}";
-  String JSON_FORBIDDEN = "{\"error\":\"Forbidden\"}";
+  String JSON_NO_PERMISSION = "{\"error\":\"No Permission\"}";
 }
