@@ -12,8 +12,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fw.irongate.usecases.login.LoginRequest;
 import com.fw.irongate.usecases.login.LoginUseCase;
-import com.fw.irongate.web.requests.LoginRequest;
 import com.fw.irongate.web.responses.MessageResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
