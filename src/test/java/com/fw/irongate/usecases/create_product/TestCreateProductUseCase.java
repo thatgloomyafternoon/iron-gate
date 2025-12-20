@@ -88,8 +88,7 @@ class CreateProductUseCaseTest {
     /* 2. Act & Assert */
     IllegalArgumentException exception =
         assertThrows(
-            IllegalArgumentException.class,
-            () -> createProductUseCase.handle(request, jwt));
+            IllegalArgumentException.class, () -> createProductUseCase.handle(request, jwt));
     /* Optional: Verify message content if you have access to MessageConstants in test scope */
     assertEquals(SKU_ALREADY_EXISTS, exception.getMessage());
     /* 3. Verify that SAVE was NEVER called */
