@@ -1,4 +1,4 @@
-package com.fw.irongate.web.requests;
+package com.fw.irongate.usecases.login;
 
 import jakarta.validation.constraints.NotBlank;
 
