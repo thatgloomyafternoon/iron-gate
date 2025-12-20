@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import com.fw.irongate.models.dto.SecurityUserDTO;
 import com.fw.irongate.utils.CookieUtil;
 import com.fw.irongate.utils.JwtUtil;
-import com.fw.irongate.web.requests.LoginRequest;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.List;
 import java.util.UUID;
