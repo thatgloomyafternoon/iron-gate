@@ -28,10 +28,6 @@ public class ProductSpecification {
       if (request.maxPrice() != null) {
         predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), request.maxPrice()));
       }
-      if (request.minQuantity() != null) {
-        predicates.add(
-            criteriaBuilder.greaterThanOrEqualTo(root.get("quantity"), request.minQuantity()));
-      }
       return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     };
   }

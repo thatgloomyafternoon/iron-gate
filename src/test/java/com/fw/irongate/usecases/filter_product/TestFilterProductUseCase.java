@@ -52,7 +52,7 @@ class FilterProductUseCaseTest {
   @Test
   void handle_ShouldReturnMappedData_WhenProductsExist() {
     /* 1. Arrange */
-    FilterProductRequest request = new FilterProductRequest("test", null, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest("test", null, null, 0, 10);
     Product product = createProduct();
     Page<Product> productPage = new PageImpl<>(List.of(product));
     /* Mock repository to return the page */
@@ -79,7 +79,7 @@ class FilterProductUseCaseTest {
   @Test
   void handle_ShouldReturnEmptyList_WhenNoProductsFound() {
     /* 1. Arrange */
-    FilterProductRequest request = new FilterProductRequest("nonexistent", null, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest("nonexistent", null, null, 0, 10);
     /* Mock repository to return empty page */
     when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
         .thenReturn(Page.empty());
@@ -96,7 +96,7 @@ class FilterProductUseCaseTest {
   void handle_ShouldApplyCorrectPaginationAndSorting() {
     /* 1. Arrange */
     /* Requesting Page 2 (index 2), Size 5 */
-    FilterProductRequest request = new FilterProductRequest(null, null, null, null, 2, 5);
+    FilterProductRequest request = new FilterProductRequest(null, null, null, 2, 5);
     when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
         .thenReturn(Page.empty());
     /* 2. Act */

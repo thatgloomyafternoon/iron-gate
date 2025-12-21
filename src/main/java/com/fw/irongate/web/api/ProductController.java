@@ -44,11 +44,9 @@ public class ProductController {
       @RequestParam(required = false) String query,
       @RequestParam(required = false) BigDecimal minPrice,
       @RequestParam(required = false) BigDecimal maxPrice,
-      @RequestParam(required = false) Integer minQuantity,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
-    FilterProductRequest request =
-        new FilterProductRequest(query, minPrice, maxPrice, minQuantity, page, size);
+    FilterProductRequest request = new FilterProductRequest(query, minPrice, maxPrice, page, size);
     return ResponseEntity.ok(filterProductUseCase.handle(request));
   }
 }
