@@ -13,6 +13,7 @@ import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.web.responses.PaginatedResponse;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,9 @@ class FilterProductUseCaseTest {
   /* Helper to create a dummy Product entity */
   private Product createProduct() {
     Product product = new Product();
-    product.setId(UuidCreator.getTimeOrderedEpoch()); /* Assuming BaseEntity provides setId/getId */
+    product.setId(UuidCreator.getTimeOrderedEpoch());
+    product.setCreatedAt(ZonedDateTime.now());
+    product.setCreatedBy("system@mail.com");
     product.setName("Test Product");
     product.setSku("SKU-001");
     product.setDescription("Description");
@@ -65,6 +68,8 @@ class FilterProductUseCaseTest {
     /* Verify Content Mapping */
     ProductDTO dto = response.data().getFirst();
     assertEquals(product.getId(), dto.id());
+    assertEquals(product.getCreatedAt(), dto.createdAt());
+    assertEquals(product.getCreatedBy(), dto.createdBy());
     assertEquals(product.getName(), dto.name());
     assertEquals(product.getSku(), dto.sku());
     assertEquals(product.getPrice(), dto.price());

@@ -31,7 +31,13 @@ public class FilterProductUseCase {
             .map(
                 p ->
                     new ProductDTO(
-                        p.getId(), p.getName(), p.getSku(), p.getDescription(), p.getPrice()))
+                        p.getId(),
+                        p.getName(),
+                        p.getCreatedAt(),
+                        p.getCreatedBy(),
+                        p.getSku(),
+                        p.getDescription(),
+                        p.getPrice()))
             .toList();
     return new PaginatedResponse<>(
         productDTOList,
