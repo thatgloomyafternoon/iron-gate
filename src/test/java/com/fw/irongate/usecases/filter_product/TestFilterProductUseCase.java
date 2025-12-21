@@ -42,7 +42,6 @@ class FilterProductUseCaseTest {
     product.setSku("SKU-001");
     product.setDescription("Description");
     product.setPrice(new BigDecimal("99.99"));
-    product.setQuantity(10);
     return product;
   }
 
@@ -69,7 +68,6 @@ class FilterProductUseCaseTest {
     assertEquals(product.getName(), dto.name());
     assertEquals(product.getSku(), dto.sku());
     assertEquals(product.getPrice(), dto.price());
-    assertEquals(product.getQuantity(), dto.quantity());
   }
 
   @SuppressWarnings("unchecked")

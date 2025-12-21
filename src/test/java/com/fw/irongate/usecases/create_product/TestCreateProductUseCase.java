@@ -32,7 +32,7 @@ class CreateProductUseCaseTest {
   /* Helper to create a dummy valid request */
   private CreateProductRequest createValidRequest() {
     return new CreateProductRequest(
-        "Test Product", "SKU-123", "Description", new BigDecimal("100.00"), 10);
+        "Test Product", "SKU-123", "Description", new BigDecimal("100.00"));
   }
 
   /* Helper to create dummy JWT claims */
@@ -72,7 +72,6 @@ class CreateProductUseCaseTest {
     assertEquals(request.sku(), capturedProduct.getSku());
     assertEquals(request.description(), capturedProduct.getDescription());
     assertEquals(request.price(), capturedProduct.getPrice());
-    assertEquals(request.quantity(), capturedProduct.getQuantity());
     /* Check Audit Fields (from JWT) */
     assertEquals(jwt.email(), capturedProduct.getCreatedBy());
     assertEquals(jwt.email(), capturedProduct.getUpdatedBy());

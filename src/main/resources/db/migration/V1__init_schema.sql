@@ -77,7 +77,6 @@ create table products (
   description varchar(255),
   name varchar(255) not null,
   price numeric(19,2) not null,
-  quantity integer not null,
   sku varchar(255) not null unique,
   primary key (id)
 );

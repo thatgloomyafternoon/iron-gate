@@ -4,10 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 
-@SuppressWarnings("unused")
 @Table(name = "products")
 @Entity
 public class Product extends BaseEntity {
@@ -24,10 +22,6 @@ public class Product extends BaseEntity {
   @Column(name = "price", nullable = false, precision = 19, scale = 2)
   @Positive
   private BigDecimal price;
-
-  @Column(name = "quantity", nullable = false)
-  @PositiveOrZero
-  private Integer quantity;
 
   public String getName() {
     return name;
@@ -59,13 +53,5 @@ public class Product extends BaseEntity {
 
   public void setPrice(BigDecimal price) {
     this.price = price;
-  }
-
-  public Integer getQuantity() {
-    return quantity;
-  }
-
-  public void setQuantity(Integer quantity) {
-    this.quantity = quantity;
   }
 }

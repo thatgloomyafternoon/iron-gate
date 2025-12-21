@@ -28,7 +28,6 @@ public class CreateProductUseCase {
     product.setSku(request.sku());
     product.setDescription(request.description());
     product.setPrice(request.price());
-    product.setQuantity(request.quantity());
     product = productRepository.save(product);
     return new IdResponse(product.getId());
   }

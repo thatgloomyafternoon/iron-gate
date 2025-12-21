@@ -38,8 +38,7 @@ class TestApiProductCreate {
   @Test
   void create_ShouldReturn200AndId_WhenSuccessful() {
     /* 1. Arrange */
-    CreateProductRequest request =
-        new CreateProductRequest("Name", "SKU", "Desc", BigDecimal.TEN, 10);
+    CreateProductRequest request = new CreateProductRequest("Name", "SKU", "Desc", BigDecimal.TEN);
     UUID expectedId = UUID.randomUUID();
     when(createProductUseCase.handle(request, mockJwt)).thenReturn(new IdResponse(expectedId));
     /* 2. Act (Direct method call - no MockMvc) */

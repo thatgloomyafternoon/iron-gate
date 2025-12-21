@@ -28,7 +28,7 @@ class TestApiProductCreateValidation {
   @Test
   void shouldPass_WhenAllFieldsAreValid() {
     CreateProductRequest request =
-        new CreateProductRequest("Valid Name", "SKU-123", "Desc", new BigDecimal("99.99"), 10);
+        new CreateProductRequest("Valid Name", "SKU-123", "Desc", new BigDecimal("99.99"));
     Set<ConstraintViolation<CreateProductRequest>> violations = validator.validate(request);
     assertTrue(violations.isEmpty(), "Expected no violations for valid request");
   }
@@ -36,7 +36,7 @@ class TestApiProductCreateValidation {
   @Test
   void shouldFail_WhenNameIsBlank() {
     CreateProductRequest request =
-        new CreateProductRequest("", /* Blank */ "SKU-123", "Desc", BigDecimal.TEN, 10);
+        new CreateProductRequest("", /* Blank */ "SKU-123", "Desc", BigDecimal.TEN);
     Set<ConstraintViolation<CreateProductRequest>> violations = validator.validate(request);
     assertFalse(violations.isEmpty());
     assertEquals("Name cannot be blank", violations.iterator().next().getMessage());
@@ -45,7 +45,7 @@ class TestApiProductCreateValidation {
   @Test
   void shouldFail_WhenPriceIsNegative() {
     CreateProductRequest request =
-        new CreateProductRequest("Name", "SKU", "Desc", new BigDecimal("-1.00"), /* Negative */ 10);
+        new CreateProductRequest("Name", "SKU", "Desc", new BigDecimal("-1.00") /* Negative */);
     Set<ConstraintViolation<CreateProductRequest>> violations = validator.validate(request);
     assertFalse(violations.isEmpty());
     assertEquals("Price must be positive", violations.iterator().next().getMessage());
@@ -56,33 +56,13 @@ class TestApiProductCreateValidation {
     /* Case 1: Too many integer digits (Max 17) */
     CreateProductRequest largePrice =
         new CreateProductRequest(
-            "Name", "SKU", "Desc", new BigDecimal("100000000000000000.00"), /* 18 digits */ 10);
+            "Name", "SKU", "Desc", new BigDecimal("100000000000000000.00") /* 18 digits */);
     Set<ConstraintViolation<CreateProductRequest>> v1 = validator.validate(largePrice);
     assertFalse(v1.isEmpty(), "Should fail for price with > 17 integer digits");
     /* Case 2: Too many decimal places (Max 2) */
     CreateProductRequest precisePrice =
-        new CreateProductRequest(
-            "Name", "SKU", "Desc", new BigDecimal("10.999"), /* 3 decimals */ 10);
+        new CreateProductRequest("Name", "SKU", "Desc", new BigDecimal("10.999") /* 3 decimals */);
     Set<ConstraintViolation<CreateProductRequest>> v2 = validator.validate(precisePrice);
     assertFalse(v2.isEmpty(), "Should fail for price with > 2 decimal places");
-  }
-
-  @SuppressWarnings("DataFlowIssue")
-  @Test
-  void shouldFail_WhenQuantityIsNegative() {
-    CreateProductRequest request =
-        new CreateProductRequest("Name", "SKU", "Desc", BigDecimal.TEN, -1 /* Negative */);
-    Set<ConstraintViolation<CreateProductRequest>> violations = validator.validate(request);
-    assertFalse(violations.isEmpty());
-    assertEquals("Quantity must be positive or zero", violations.iterator().next().getMessage());
-  }
-
-  @Test
-  void shouldPass_WhenQuantityIsZero() {
-    CreateProductRequest request =
-        new CreateProductRequest(
-            "Name", "SKU", "Desc", BigDecimal.TEN, 0 /* Zero is valid (@PositiveOrZero) */);
-    Set<ConstraintViolation<CreateProductRequest>> violations = validator.validate(request);
-    assertTrue(violations.isEmpty());
   }
 }
