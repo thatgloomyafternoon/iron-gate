@@ -4,7 +4,6 @@ import com.fw.irongate.models.dto.SecurityUserDTO;
 import com.fw.irongate.usecases.UseCase;
 import com.fw.irongate.utils.CookieUtil;
 import com.fw.irongate.utils.JwtUtil;
-import com.fw.irongate.web.requests.LoginRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

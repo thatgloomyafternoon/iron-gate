@@ -2,8 +2,8 @@ package com.fw.irongate.configurations;
 
 import static com.fw.irongate.constants.MessageConstants.USER_ALREADY_LOGGED_OUT;
 import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
-import static com.fw.irongate.constants.SystemConstants.JSON_FORBIDDEN;
 import static com.fw.irongate.constants.SystemConstants.JSON_INVALID_ROLE;
+import static com.fw.irongate.constants.SystemConstants.JSON_NO_PERMISSION;
 import static com.fw.irongate.constants.SystemConstants.JSON_UNAUTHORIZED;
 import static com.fw.irongate.constants.SystemConstants.SYSTEM;
 
@@ -95,7 +95,7 @@ public class JwtFilter extends OncePerRequestFilter {
             && permissionRepository
                 .findAllActiveByRoleIdAndResourcePath(jwtClaimDTO.roleId(), uri)
                 .isEmpty()) {
-          setResponseStatusAndJson(response, HttpServletResponse.SC_FORBIDDEN, JSON_FORBIDDEN);
+          setResponseStatusAndJson(response, HttpServletResponse.SC_FORBIDDEN, JSON_NO_PERMISSION);
           return;
         }
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
