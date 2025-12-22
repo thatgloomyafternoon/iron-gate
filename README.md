@@ -6,9 +6,10 @@
 ### Tech Stack
 - Java
 - Spring Boot
+- Hibernate
+- PostgreSQL
 - JUnit
 - Gradle
-- PostgreSQL
 - Flyway
 - React TS
 - Docker
