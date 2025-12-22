@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
-class ProductSpecificationTest {
+class TestProductSpecification {
 
   @Mock private Root<Product> root;
   @Mock private CriteriaQuery<?> query;
