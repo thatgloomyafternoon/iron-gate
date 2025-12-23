@@ -28,9 +28,7 @@ import org.springframework.http.ResponseEntity;
 class TestApiAuthLogout {
 
   @Mock private LogoutUseCase logoutUseCase;
-
   @Mock private HttpServletResponse httpServletResponse;
-
   @InjectMocks private AuthController authController;
 
   @Test
