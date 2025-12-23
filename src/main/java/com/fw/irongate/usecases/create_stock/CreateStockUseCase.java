@@ -1,7 +1,7 @@
 package com.fw.irongate.usecases.create_stock;
 
 import static com.fw.irongate.constants.MessageConstants.OPERATION_NOT_PERMITTED;
-import static com.fw.irongate.constants.MessageConstants.PRODUCT_NOT_EXISTS;
+import static com.fw.irongate.constants.MessageConstants.PRODUCT_NOT_FOUND;
 
 import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.entities.Product;
@@ -46,7 +46,7 @@ public class CreateStockUseCase {
     /* check if the product exists */
     Optional<Product> optProduct = productRepository.findById(request.productId());
     if (optProduct.isEmpty()) {
-      throw new IllegalArgumentException(PRODUCT_NOT_EXISTS);
+      throw new IllegalArgumentException(PRODUCT_NOT_FOUND);
     }
     /* check if the requested stock exists */
     Optional<Stock> optStock =

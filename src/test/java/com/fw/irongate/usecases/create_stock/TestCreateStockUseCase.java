@@ -1,7 +1,7 @@
 package com.fw.irongate.usecases.create_stock;
 
 import static com.fw.irongate.constants.MessageConstants.OPERATION_NOT_PERMITTED;
-import static com.fw.irongate.constants.MessageConstants.PRODUCT_NOT_EXISTS;
+import static com.fw.irongate.constants.MessageConstants.PRODUCT_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -150,7 +150,7 @@ class TestCreateStockUseCase {
     IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class, () -> createStockUseCase.handle(jwtClaimDTO, request));
-    assertEquals(PRODUCT_NOT_EXISTS, exception.getMessage());
+    assertEquals(PRODUCT_NOT_FOUND, exception.getMessage());
     verify(stockRepository, never()).save(any(Stock.class));
   }
 }
