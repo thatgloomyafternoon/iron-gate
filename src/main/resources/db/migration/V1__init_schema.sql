@@ -81,6 +81,46 @@ create table products (
   primary key (id)
 );
 
+create table warehouses (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  code varchar(255) not null,
+  name varchar(255) not null,
+  primary key (id)
+);
+
+create table stocks (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  quantity integer not null,
+  product_id uuid not null,
+  warehouse_id uuid not null,
+  primary key (id)
+);
+
+create table warehouses_users (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  user_id uuid not null,
+  warehouse_id uuid not null,
+  primary key (id)
+);
+
 alter table if exists permissions
 add constraint FKgbbliiluax6e4bwk5qxohc2fy foreign key (resource_path_id) references sysconfigs;
 
@@ -92,3 +132,15 @@ add constraint FK58x4i5xuxqpgd5fqulv9yfej3 foreign key (sysconfig_type_id) refer
 
 alter table if exists users
 add constraint FK7hhxskfp2mwm6k9fwef36n0hx foreign key (role_id) references sysconfigs;
+
+alter table if exists stocks
+add constraint FKff7be959jyco0iukc1dcjj9qm foreign key (product_id) references products;
+
+alter table if exists stocks
+add constraint FKjftt43i266337pt7y8b291hpx foreign key (warehouse_id) references warehouses;
+
+alter table if exists warehouses_users
+add constraint FKiwp5n3ghb267uuu0hml1t282h foreign key (user_id) references users;
+
+alter table if exists warehouses_users
+add constraint FKqn8wea4lk2l9yiawuxlc5mt82 foreign key (warehouse_id) references warehouses;

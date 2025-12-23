@@ -39,7 +39,7 @@ class FilterWarehouseUseCaseTest {
     warehouse.setId(UuidCreator.getTimeOrderedEpoch());
     warehouse.setCreatedAt(ZonedDateTime.now());
     warehouse.setCreatedBy("system@mail.com");
-    warehouse.setCity("New York");
+    warehouse.setName("New York");
     warehouse.setCode("NYC");
     return warehouse;
   }
@@ -64,7 +64,7 @@ class FilterWarehouseUseCaseTest {
     /* Verify Content Mapping */
     WarehouseDTO dto = response.data().getFirst();
     assertEquals(warehouse.getId(), dto.id());
-    assertEquals(warehouse.getCity(), dto.city());
+    assertEquals(warehouse.getName(), dto.name());
     assertEquals(warehouse.getCode(), dto.code());
     assertEquals(warehouse.getCreatedAt(), dto.createdAt());
     assertEquals(warehouse.getCreatedBy(), dto.createdBy());

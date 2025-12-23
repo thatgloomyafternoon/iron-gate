@@ -67,7 +67,7 @@ class TestFilterStockUseCase {
   private Warehouse createWarehouse() {
     Warehouse warehouse = new Warehouse();
     warehouse.setId(UuidCreator.getTimeOrderedEpoch());
-    warehouse.setCity("New York");
+    warehouse.setName("New York");
     warehouse.setCode("NYC");
     return warehouse;
   }
@@ -119,7 +119,7 @@ class TestFilterStockUseCase {
     assertEquals(stock.getId(), dto.id());
     assertEquals(stock.getQuantity(), dto.quantity());
     assertEquals(product.getName(), dto.productName());
-    assertEquals(warehouse.getCity(), dto.warehouse());
+    assertEquals(warehouse.getName(), dto.warehouse());
   }
 
   @SuppressWarnings("unchecked")

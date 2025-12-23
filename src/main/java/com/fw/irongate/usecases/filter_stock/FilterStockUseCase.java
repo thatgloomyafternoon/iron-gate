@@ -47,7 +47,7 @@ public class FilterStockUseCase {
                     new StockDTO(
                         s.getId(),
                         s.getProduct().getName(),
-                        s.getWarehouse().getCity(),
+                        s.getWarehouse().getName(),
                         s.getQuantity(),
                         s.getCreatedAt(),
                         s.getCreatedBy(),

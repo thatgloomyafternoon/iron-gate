@@ -31,7 +31,7 @@ public class FilterWarehouseUseCase {
             .map(
                 w ->
                     new WarehouseDTO(
-                        w.getId(), w.getCity(), w.getCode(), w.getCreatedAt(), w.getCreatedBy()))
+                        w.getId(), w.getName(), w.getCode(), w.getCreatedAt(), w.getCreatedBy()))
             .toList();
     return new PaginatedResponse<>(
         warehouseDTOList, page.getNumber(), page.getTotalElements(), page.getTotalPages());
