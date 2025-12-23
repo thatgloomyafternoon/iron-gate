@@ -21,13 +21,13 @@ public class StockSpecification {
       List<Predicate> predicates = new ArrayList<>();
       if (request.query() != null && !request.query().isBlank()) {
         String searchPattern = "%" + request.query().toLowerCase() + "%";
-        Predicate cityMatch =
+        Predicate warehouseNameMatch =
             criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("warehouse").get("city")), searchPattern);
+                criteriaBuilder.lower(root.get("warehouse").get("name")), searchPattern);
         Predicate productNameMatch =
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("product").get("name")), searchPattern);
-        predicates.add(criteriaBuilder.or(cityMatch, productNameMatch));
+        predicates.add(criteriaBuilder.or(warehouseNameMatch, productNameMatch));
       }
       if (request.maxQuantity() != null) {
         predicates.add(

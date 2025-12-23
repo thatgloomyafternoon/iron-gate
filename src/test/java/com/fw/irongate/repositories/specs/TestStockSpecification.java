@@ -46,7 +46,7 @@ class TestStockSpecification {
     lenient().when(root.get("warehouse")).thenReturn(warehousePath);
     lenient().when(root.get("product")).thenReturn(productPath);
     lenient().when(root.<Integer>get("quantity")).thenReturn(quantityPath);
-    lenient().when(warehousePath.<String>get("city")).thenReturn(stringPath);
+    lenient().when(warehousePath.<String>get("name")).thenReturn(stringPath);
     lenient().when(warehousePath.<UUID>get("id")).thenReturn(idPath);
     lenient().when(productPath.<String>get("name")).thenReturn(stringPath);
   }
@@ -106,7 +106,7 @@ class TestStockSpecification {
     spec.toPredicate(root, query, cb);
     /* Assert */
     verify(root).get("warehouse");
-    verify(warehousePath).get("city");
+    verify(warehousePath).get("name");
     verify(root).get("product");
     verify(productPath).get("name");
     verify(cb, times(2)).like(eq(lowerExpression), eq("%test%"));
