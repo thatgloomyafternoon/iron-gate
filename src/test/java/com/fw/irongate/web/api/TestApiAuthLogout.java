@@ -25,7 +25,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
-class TestAuthController {
+class TestApiAuthLogout {
 
   @Mock private LogoutUseCase logoutUseCase;
 
