@@ -49,6 +49,7 @@ public class FilterStockUseCase {
                         s.getProduct().getName(),
                         s.getWarehouse().getName(),
                         s.getQuantity(),
+                        s.getAllocated(),
                         s.getCreatedAt(),
                         s.getCreatedBy(),
                         s.getUpdatedAt(),
