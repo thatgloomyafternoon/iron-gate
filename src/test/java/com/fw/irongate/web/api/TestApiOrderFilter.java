@@ -10,7 +10,6 @@ import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.dto.OrderDTO;
 import com.fw.irongate.usecases.filter_order.FilterOrderRequest;
 import com.fw.irongate.usecases.filter_order.FilterOrderUseCase;
-import com.fw.irongate.usecases.fulfill_order.FulfillOrderUseCase;
 import com.fw.irongate.web.responses.PaginatedResponse;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -30,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 class TestApiOrderFilter {
 
   @Mock private FilterOrderUseCase filterOrderUseCase;
-  @Mock private FulfillOrderUseCase fulfillOrderUseCase;
   @InjectMocks private OrderController orderController;
 
   private JwtClaimDTO mockJwt;
