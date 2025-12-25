@@ -1,9 +1,6 @@
 package com.fw.irongate.web.api;
 
 import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
-import static com.fw.irongate.utils.TestHelper.createSysconfig;
-import static com.fw.irongate.utils.TestHelper.createSysconfigType;
-import static com.fw.irongate.utils.TestHelper.createUser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
