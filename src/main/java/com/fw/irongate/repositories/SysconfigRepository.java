@@ -10,4 +10,7 @@ public interface SysconfigRepository extends JpaRepository<Sysconfig, UUID> {
 
   @Query(value = "SELECT s FROM Sysconfig s WHERE s.id = ?1 AND s.deletedAt IS NULL")
   Optional<Sysconfig> findOneActiveById(UUID id);
+
+  @Query(value = "SELECT s FROM Sysconfig s WHERE s.key = ?1 AND s.deletedAt IS NULL")
+  Optional<Sysconfig> findByKey(String key);
 }

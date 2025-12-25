@@ -8,6 +8,7 @@ public record StockDTO(
     String productName,
     String warehouse,
     Integer quantity,
+    Integer allocated,
     ZonedDateTime createdAt,
     String createdBy,
     ZonedDateTime updatedAt,

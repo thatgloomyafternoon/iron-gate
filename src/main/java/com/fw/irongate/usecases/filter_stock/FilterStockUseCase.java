@@ -1,5 +1,7 @@
 package com.fw.irongate.usecases.filter_stock;
 
+import static com.fw.irongate.constants.MessageConstants.NOT_TIED_TO_WAREHOUSE;
+
 import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.dto.StockDTO;
 import com.fw.irongate.models.entities.Stock;
@@ -35,6 +37,9 @@ public class FilterStockUseCase {
             .map(WarehouseUser::getWarehouse)
             .map(Warehouse::getId)
             .toList();
+    if (warehouseIds.isEmpty()) {
+      throw new IllegalArgumentException(NOT_TIED_TO_WAREHOUSE);
+    }
     Pageable pageable =
         PageRequest.of(request.page(), request.size(), Sort.by("createdAt").descending());
     Page<Stock> stockPage =

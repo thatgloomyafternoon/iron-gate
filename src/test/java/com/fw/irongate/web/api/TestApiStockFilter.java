@@ -52,6 +52,7 @@ class TestApiStockFilter {
             "Product Name",
             "NYC",
             10,
+            2,
             ZonedDateTime.now(),
             "admin",
             ZonedDateTime.now(),

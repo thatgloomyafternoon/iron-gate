@@ -25,6 +25,10 @@ public class Stock extends BaseEntity {
   @PositiveOrZero
   private Integer quantity;
 
+  @Column(name = "allocated", nullable = false)
+  @PositiveOrZero
+  private Integer allocated = 0;
+
   public Warehouse getWarehouse() {
     return warehouse;
   }
@@ -47,5 +51,13 @@ public class Stock extends BaseEntity {
 
   public void setQuantity(Integer quantity) {
     this.quantity = quantity;
+  }
+
+  public Integer getAllocated() {
+    return allocated;
+  }
+
+  public void setAllocated(Integer allocated) {
+    this.allocated = allocated;
   }
 }

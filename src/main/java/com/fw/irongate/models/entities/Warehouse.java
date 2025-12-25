@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 @Entity
 public class Warehouse extends BaseEntity {
 
-  @Column(name = "name", nullable = false)
+  @Column(name = "name", nullable = false, unique = true)
   @NotBlank
   private String name;
 

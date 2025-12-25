@@ -1,7 +1,9 @@
 package com.fw.irongate.usecases.filter_stock;
 
+import static com.fw.irongate.constants.MessageConstants.NOT_TIED_TO_WAREHOUSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -161,7 +163,9 @@ class TestFilterStockUseCase {
             "ROLE_MANAGER",
             "full name");
     FilterStockRequest request = new FilterStockRequest(null, null, 2, 5);
-    when(warehouseUserRepository.findAllByUserId(userId)).thenReturn(Collections.emptyList());
+    Warehouse warehouse = createWarehouse();
+    WarehouseUser warehouseUser = createWarehouseUser(userId, warehouse);
+    when(warehouseUserRepository.findAllByUserId(userId)).thenReturn(List.of(warehouseUser));
     when(stockRepository.findAll(any(Specification.class), any(Pageable.class)))
         .thenReturn(Page.empty());
     /* 2. Act */
@@ -177,7 +181,6 @@ class TestFilterStockUseCase {
     assertTrue(Objects.requireNonNull(sort.getOrderFor("createdAt")).isDescending());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void handle_ShouldWorkWithEmptyWarehouseUserList() {
     /* 1. Arrange */
@@ -191,12 +194,11 @@ class TestFilterStockUseCase {
             "full name");
     FilterStockRequest request = new FilterStockRequest(null, null, 0, 10);
     when(warehouseUserRepository.findAllByUserId(userId)).thenReturn(Collections.emptyList());
-    when(stockRepository.findAll(any(Specification.class), any(Pageable.class)))
-        .thenReturn(Page.empty());
-    /* 2. Act */
-    PaginatedResponse<StockDTO> response = filterStockUseCase.handle(jwtClaimDTO, request);
-    /* 3. Assert */
-    assertNotNull(response);
-    assertTrue(response.data().isEmpty());
+
+    /* 2. Act & 3. Assert */
+    IllegalArgumentException exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> filterStockUseCase.handle(jwtClaimDTO, request));
+    assertEquals(NOT_TIED_TO_WAREHOUSE, exception.getMessage());
   }
 }

@@ -6,9 +6,11 @@ import com.fw.irongate.usecases.create_stock.CreateStockRequest;
 import com.fw.irongate.usecases.create_stock.CreateStockUseCase;
 import com.fw.irongate.usecases.filter_stock.FilterStockRequest;
 import com.fw.irongate.usecases.filter_stock.FilterStockUseCase;
+import com.fw.irongate.usecases.get_stock_details.GetStockDetailsUseCase;
 import com.fw.irongate.web.responses.IdResponse;
 import com.fw.irongate.web.responses.PaginatedResponse;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,11 +26,15 @@ public class StockController {
 
   private final FilterStockUseCase filterStockUseCase;
   private final CreateStockUseCase createStockUseCase;
+  private final GetStockDetailsUseCase getStockDetailsUseCase;
 
   private StockController(
-      FilterStockUseCase filterStockUseCase, CreateStockUseCase createStockUseCase) {
+      FilterStockUseCase filterStockUseCase,
+      CreateStockUseCase createStockUseCase,
+      GetStockDetailsUseCase getStockDetailsUseCase) {
     this.filterStockUseCase = filterStockUseCase;
     this.createStockUseCase = createStockUseCase;
+    this.getStockDetailsUseCase = getStockDetailsUseCase;
   }
 
   @GetMapping("/filter")
@@ -47,5 +53,11 @@ public class StockController {
       @AuthenticationPrincipal JwtClaimDTO jwtClaimDTO,
       @RequestBody @Valid CreateStockRequest request) {
     return ResponseEntity.ok(createStockUseCase.handle(jwtClaimDTO, request));
+  }
+
+  @GetMapping("/details")
+  public ResponseEntity<StockDTO> getDetails(
+      @AuthenticationPrincipal JwtClaimDTO jwtClaimDTO, @RequestParam UUID id) {
+    return ResponseEntity.ok(getStockDetailsUseCase.handle(jwtClaimDTO, id));
   }
 }
