@@ -13,4 +13,8 @@ public interface MessageConstants {
   String DEST_WAREHOUSE_NOT_FOUND = "Destination warehouse not found";
   String SHIPMENT_NOT_FOUND = "Shipment not found";
   String INVALID_STATE = "Invalid state";
+  String NOT_TIED_TO_WAREHOUSE = "Not tied to any warehouse";
+  String ORDER_NOT_FOUND = "Order not found";
+  String PRODUCT_QUANTITY_REQUIREMENT_NOT_FULFILLED =
+      "Product(s) quantity requirement not fulfilled";
 }
