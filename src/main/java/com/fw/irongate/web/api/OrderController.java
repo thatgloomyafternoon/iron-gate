@@ -32,7 +32,7 @@ public class OrderController {
   @GetMapping("/filter")
   public ResponseEntity<PaginatedResponse<OrderDTO>> filter(
       @AuthenticationPrincipal JwtClaimDTO jwtClaimDTO,
-      @RequestParam(name = "query", required = false, defaultValue = "") String query,
+      @RequestParam(name = "query", required = false) String query,
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "10") int size) {
     return ResponseEntity.ok(

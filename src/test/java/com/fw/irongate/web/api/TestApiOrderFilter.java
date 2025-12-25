@@ -75,15 +75,14 @@ class TestApiOrderFilter {
     int page = 0;
     int size = 10;
     /* Null query */
-    // Note: The controller defines default value as empty string for query if missing,
-    // but if passed explicitly as null (which can happen in Java method call, though Spring might
-    // convert it),
-    // let's check what value we expect. The controller says:
-    // @RequestParam(name = "query", required = false, defaultValue = "") String query
-    // So if I call the method with null, it receives null.
-    // If I call the API without the param, Spring passes "".
-
-    // In this unit test I am calling the method directly.
+    /* Note: The controller defines default value as empty string for query if missing, */
+    /* but if passed explicitly as null (which can happen in Java method call, though Spring might */
+    /* convert it), */
+    /* let's check what value we expect. The controller says: */
+    /* @RequestParam(name = "query", required = false, defaultValue = "") String query */
+    /* So if I call the method with null, it receives null. */
+    /* If I call the API without the param, Spring passes "". */
+    /* In this unit test I am calling the method directly. */
     FilterOrderRequest expectedRequest = new FilterOrderRequest(null, page, size);
     PaginatedResponse<OrderDTO> mockResponse = new PaginatedResponse<>(List.of(), 0, 0, 0);
     when(filterOrderUseCase.handle(eq(mockJwt), eq(expectedRequest))).thenReturn(mockResponse);
