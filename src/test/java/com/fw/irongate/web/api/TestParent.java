@@ -3,15 +3,21 @@ package com.fw.irongate.web.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fw.irongate.models.entities.Permission;
 import com.fw.irongate.models.entities.Product;
+import com.fw.irongate.models.entities.Stock;
 import com.fw.irongate.models.entities.Sysconfig;
 import com.fw.irongate.models.entities.SysconfigType;
 import com.fw.irongate.models.entities.User;
+import com.fw.irongate.models.entities.Warehouse;
+import com.fw.irongate.models.entities.WarehouseUser;
 import com.fw.irongate.repositories.PermissionRepository;
 import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.repositories.RevokedTokenRepository;
+import com.fw.irongate.repositories.StockRepository;
 import com.fw.irongate.repositories.SysconfigRepository;
 import com.fw.irongate.repositories.SysconfigTypeRepository;
 import com.fw.irongate.repositories.UserRepository;
+import com.fw.irongate.repositories.WarehouseRepository;
+import com.fw.irongate.repositories.WarehouseUserRepository;
 import com.fw.irongate.utils.JwtUtil;
 import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +33,9 @@ public abstract class TestParent {
   @Autowired protected PermissionRepository permissionRepository;
   @Autowired protected RevokedTokenRepository revokedTokenRepository;
   @Autowired protected ProductRepository productRepository;
+  @Autowired protected WarehouseRepository warehouseRepository;
+  @Autowired protected StockRepository stockRepository;
+  @Autowired protected WarehouseUserRepository warehouseUserRepository;
   @Autowired protected JwtUtil jwtUtil;
 
   @Autowired protected MockMvc mockMvc;
@@ -34,7 +43,10 @@ public abstract class TestParent {
   @Autowired protected ObjectMapper objectMapper;
 
   protected void deleteAll() {
+    stockRepository.deleteAll();
     productRepository.deleteAll();
+    warehouseUserRepository.deleteAll();
+    warehouseRepository.deleteAll();
     revokedTokenRepository.deleteAll();
     permissionRepository.deleteAll();
     userRepository.deleteAll();
@@ -90,5 +102,35 @@ public abstract class TestParent {
     product.setDescription(description);
     product.setPrice(price);
     return productRepository.save(product);
+  }
+
+  protected Warehouse createWarehouse(String name, String code) {
+    Warehouse warehouse = new Warehouse();
+    warehouse.setCreatedBy("system");
+    warehouse.setUpdatedBy("system");
+    warehouse.setName(name);
+    warehouse.setCode(code);
+    return warehouseRepository.save(warehouse);
+  }
+
+  protected Stock createStock(
+      Warehouse warehouse, Product product, Integer quantity, Integer allocated) {
+    Stock stock = new Stock();
+    stock.setCreatedBy("system");
+    stock.setUpdatedBy("system");
+    stock.setWarehouse(warehouse);
+    stock.setProduct(product);
+    stock.setQuantity(quantity);
+    stock.setAllocated(allocated);
+    return stockRepository.save(stock);
+  }
+
+  protected WarehouseUser createWarehouseUser(Warehouse warehouse, User user) {
+    WarehouseUser wu = new WarehouseUser();
+    wu.setCreatedBy("system");
+    wu.setUpdatedBy("system");
+    wu.setWarehouse(warehouse);
+    wu.setUser(user);
+    return warehouseUserRepository.save(wu);
   }
 }
