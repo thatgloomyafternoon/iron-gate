@@ -1,69 +1,116 @@
 package com.fw.irongate.web.api;
 
+import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fw.irongate.models.dto.WarehouseDTO;
-import com.fw.irongate.usecases.filter_warehouse.FilterWarehouseRequest;
-import com.fw.irongate.usecases.filter_warehouse.FilterWarehouseUseCase;
+import com.fw.irongate.models.entities.Sysconfig;
+import com.fw.irongate.models.entities.SysconfigType;
+import com.fw.irongate.usecases.login.LoginRequest;
 import com.fw.irongate.web.responses.PaginatedResponse;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.UUID;
+import jakarta.servlet.http.Cookie;
+import java.util.Objects;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
-@ExtendWith(MockitoExtension.class)
-class TestApiWarehouseFilter {
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource("classpath:application-test.properties")
+class TestApiWarehouseFilter extends TestParent {
 
-  @Mock private FilterWarehouseUseCase filterWarehouseUseCase;
-  @InjectMocks private WarehouseController warehouseController;
+  private Cookie cookie;
 
-  @Test
-  void filter_ShouldReturn200AndData_WhenSuccessful() {
-    /* 1. Arrange */
-    String query = "NYC";
-    int page = 0;
-    int size = 10;
-    FilterWarehouseRequest expectedRequest = new FilterWarehouseRequest(query, page, size);
-    WarehouseDTO warehouseDTO =
-        new WarehouseDTO(UUID.randomUUID(), "New York", "NYC", ZonedDateTime.now(), "admin");
-    PaginatedResponse<WarehouseDTO> mockResponse =
-        new PaginatedResponse<>(List.of(warehouseDTO), 0, 1, 1);
-    when(filterWarehouseUseCase.handle(eq(expectedRequest))).thenReturn(mockResponse);
-    /* 2. Act */
-    ResponseEntity<PaginatedResponse<WarehouseDTO>> response =
-        warehouseController.filter(query, page, size);
-    /* 3. Assert */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(1, response.getBody().totalItems());
-    verify(filterWarehouseUseCase).handle(eq(expectedRequest));
+  @BeforeAll
+  void beforeAll() throws Exception {
+    setup();
+  }
+
+  @AfterAll
+  void afterAll() {
+    deleteAll();
   }
 
   @Test
-  void filter_ShouldHandleNullQuery() {
-    /* 1. Arrange */
-    int page = 0;
-    int size = 10;
-    /* Null query */
-    FilterWarehouseRequest expectedRequest = new FilterWarehouseRequest(null, page, size);
-    PaginatedResponse<WarehouseDTO> mockResponse = new PaginatedResponse<>(List.of(), 0, 0, 0);
-    when(filterWarehouseUseCase.handle(eq(expectedRequest))).thenReturn(mockResponse);
-    /* 2. Act */
-    ResponseEntity<PaginatedResponse<WarehouseDTO>> response =
-        warehouseController.filter(null, page, size);
-    /* 3. Assert */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    verify(filterWarehouseUseCase).handle(eq(expectedRequest));
+  void givenName_assert200_andCorrectReturnData() throws Exception {
+    /* test */
+    String string =
+        mockMvc
+            .perform(
+                get("/api/warehouse/filter")
+                    .param("query", "Hac")
+                    .cookie(cookie)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<WarehouseDTO> warehouses =
+        objectMapper.readValue(string, new TypeReference<>() {});
+    assertEquals(1, warehouses.totalItems());
+    assertEquals("Hachioji", warehouses.data().getFirst().name());
+    assertEquals("HAC", warehouses.data().getFirst().code());
+  }
+
+  // givenCode_assert200_andCorrectReturnData
+  @Test
+  void givenCode_assert200_andCorrectReturnData() throws Exception {
+    /* test */
+    String string =
+        mockMvc
+            .perform(
+                get("/api/warehouse/filter")
+                    .param("query", "T")
+                    .cookie(cookie)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<WarehouseDTO> warehouses =
+        objectMapper.readValue(string, new TypeReference<>() {});
+    assertEquals(2, warehouses.totalItems());
+    assertEquals("Tokyo", warehouses.data().getFirst().name());
+    assertEquals("TYO", warehouses.data().getFirst().code());
+    assertEquals("Tachikawa", warehouses.data().get(1).name());
+    assertEquals("TAC", warehouses.data().get(1).code());
+  }
+
+  private void setup() throws Exception {
+    SysconfigType r = createSysconfigType("ROLE", "desc");
+    SysconfigType rp = createSysconfigType("RESOURCE_PATH", "desc");
+    Sysconfig rAm = createSysconfig(r, "AREA_MANAGER", "Area Manager");
+    Sysconfig rpAwf = createSysconfig(rp, "API_WAREHOUSE_FILTER", "/api/warehouse/filter");
+    createUser(rAm, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    createPermission(rAm, rpAwf);
+    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    String cookieValue =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    cookie = new Cookie(COOKIE_NAME, cookieValue);
+    createWarehouse("Hachioji", "HAC");
+    createWarehouse("Tachikawa", "TAC");
+    createWarehouse("Tokyo", "TYO");
   }
 }
