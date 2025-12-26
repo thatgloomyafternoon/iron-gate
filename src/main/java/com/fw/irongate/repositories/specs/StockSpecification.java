@@ -27,7 +27,10 @@ public class StockSpecification {
         Predicate productNameMatch =
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("product").get("name")), searchPattern);
-        predicates.add(criteriaBuilder.or(warehouseNameMatch, productNameMatch));
+        Predicate skuMatch =
+            criteriaBuilder.like(
+                criteriaBuilder.lower(root.get("product").get("sku")), searchPattern);
+        predicates.add(criteriaBuilder.or(warehouseNameMatch, productNameMatch, skuMatch));
       }
       if (request.maxQuantity() != null) {
         predicates.add(
