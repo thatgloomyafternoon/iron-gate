@@ -1,11 +1,7 @@
-```
-./gradlew spotlessApply clean build bootRun
-./gradlew dependencies --configuration testRuntimeClasspath
-```
-
 ### Tech Stack
 - Java
 - Spring Boot
+- Spring SSE
 - Hibernate
 - PostgreSQL
 - JUnit
