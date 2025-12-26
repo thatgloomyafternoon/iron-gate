@@ -106,15 +106,9 @@ class TestApiAuthLogin extends TestParent {
   @Test
   void givenIncorrectPassword_assert403() throws Exception {
     /* setup */
-    SysconfigType role = createSysconfigType(sysconfigTypeRepository, "ROLE", "description");
-    Sysconfig areaManager =
-        createSysconfig(sysconfigRepository, role, "AREA_MANAGER", "Area Manager");
-    createUser(
-        userRepository,
-        areaManager,
-        "am@mail.com",
-        bCryptPasswordEncoder.encode("password"),
-        "full name");
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
     LoginRequest request = new LoginRequest("am@mail.com", "asd");
     /* tests */
     mockMvc
@@ -129,16 +123,11 @@ class TestApiAuthLogin extends TestParent {
   @Test
   void givenValidCred_assert200() throws Exception {
     /* setup */
-    SysconfigType role = createSysconfigType(sysconfigTypeRepository, "ROLE", "description");
-    Sysconfig areaManager =
-        createSysconfig(sysconfigRepository, role, "AREA_MANAGER", "Area Manager");
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
     User user =
         createUser(
-            userRepository,
-            areaManager,
-            "am@mail.com",
-            bCryptPasswordEncoder.encode("password"),
-            "full name");
+            areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
     LoginRequest request = new LoginRequest("am@mail.com", "password");
     /* tests */
     String cookie =

@@ -45,15 +45,9 @@ class TestApiAuthLogout extends TestParent {
   @Test
   void givenNoPermission_assert403() throws Exception {
     /* setup */
-    SysconfigType role = createSysconfigType(sysconfigTypeRepository, "ROLE", "description");
-    Sysconfig areaManager =
-        createSysconfig(sysconfigRepository, role, "AREA_MANAGER", "Area Manager");
-    createUser(
-        userRepository,
-        areaManager,
-        "am@mail.com",
-        bCryptPasswordEncoder.encode("password"),
-        "full name");
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
     LoginRequest request = new LoginRequest("am@mail.com", "password");
     String cookieValue =
         Objects.requireNonNull(
@@ -79,20 +73,12 @@ class TestApiAuthLogout extends TestParent {
   @Test
   void givenCookieAndPermission_assert200_andReturnNoCookie() throws Exception {
     /* setup */
-    SysconfigType role = createSysconfigType(sysconfigTypeRepository, "ROLE", "description");
-    SysconfigType resourcePath =
-        createSysconfigType(sysconfigTypeRepository, "RESOURCE_PATH", "description");
-    Sysconfig areaManager =
-        createSysconfig(sysconfigRepository, role, "AREA_MANAGER", "Area Manager");
-    Sysconfig apiAuthLogout =
-        createSysconfig(sysconfigRepository, resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
-    createUser(
-        userRepository,
-        areaManager,
-        "am@mail.com",
-        bCryptPasswordEncoder.encode("password"),
-        "full name");
-    createPermission(permissionRepository, areaManager, apiAuthLogout);
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    SysconfigType resourcePath = createSysconfigType("RESOURCE_PATH", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    Sysconfig apiAuthLogout = createSysconfig(resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    createPermission(areaManager, apiAuthLogout);
     LoginRequest request = new LoginRequest("am@mail.com", "password");
     String cookieValue1 =
         Objects.requireNonNull(
@@ -131,20 +117,12 @@ class TestApiAuthLogout extends TestParent {
   @Test
   void givenAlreadyLoggedOut_assert401() throws Exception {
     /* setup */
-    SysconfigType role = createSysconfigType(sysconfigTypeRepository, "ROLE", "description");
-    SysconfigType resourcePath =
-        createSysconfigType(sysconfigTypeRepository, "RESOURCE_PATH", "description");
-    Sysconfig areaManager =
-        createSysconfig(sysconfigRepository, role, "AREA_MANAGER", "Area Manager");
-    Sysconfig apiAuthLogout =
-        createSysconfig(sysconfigRepository, resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
-    createUser(
-        userRepository,
-        areaManager,
-        "am@mail.com",
-        bCryptPasswordEncoder.encode("password"),
-        "full name");
-    createPermission(permissionRepository, areaManager, apiAuthLogout);
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    SysconfigType resourcePath = createSysconfigType("RESOURCE_PATH", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    Sysconfig apiAuthLogout = createSysconfig(resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    createPermission(areaManager, apiAuthLogout);
     LoginRequest request = new LoginRequest("am@mail.com", "password");
     String cookieValue1 =
         Objects.requireNonNull(
