@@ -17,4 +17,5 @@ public interface MessageConstants {
   String ORDER_NOT_FOUND = "Order not found";
   String PRODUCT_QUANTITY_REQUIREMENT_NOT_FULFILLED =
       "Product(s) quantity requirement not fulfilled";
+  String WAREHOUSE_NOT_FOUND = "Warehouse not found";
 }
