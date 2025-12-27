@@ -1,5 +1,6 @@
 package com.fw.irongate.repositories;
 
+import com.fw.irongate.models.dto.ChartDataDTO;
 import com.fw.irongate.models.entities.Stock;
 import java.util.List;
 import java.util.Optional;
@@ -21,4 +22,11 @@ public interface StockRepository
       value =
           "SELECT s FROM Stock s JOIN FETCH s.warehouse JOIN FETCH s.product WHERE s.warehouse.id = ?1")
   List<Stock> findAllByWarehouseId(UUID warehouseId);
+
+  @Query(
+      "SELECT new com.fw.irongate.models.dto.ChartDataDTO(s.warehouse.name, SUM(s.quantity)) "
+          + "FROM Stock s "
+          + "WHERE s.deletedAt IS NULL "
+          + "GROUP BY s.warehouse.name")
+  List<ChartDataDTO> sumQuantityByWarehouse();
 }

@@ -1,6 +1,8 @@
 package com.fw.irongate.repositories;
 
+import com.fw.irongate.models.dto.ChartDataDTO;
 import com.fw.irongate.models.entities.Order;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +16,11 @@ public interface OrderRepository
       value =
           "SELECT o FROM Order o JOIN FETCH o.orderProducts JOIN FETCH o.orderProducts.product JOIN FETCH o.warehouse WHERE o.id = ?1")
   Optional<Order> findByIdWithRelations(UUID id);
+
+  @Query(
+      "SELECT new com.fw.irongate.models.dto.ChartDataDTO(o.status, COUNT(o)) "
+          + "FROM Order o "
+          + "WHERE o.deletedAt IS NULL "
+          + "GROUP BY o.status")
+  List<ChartDataDTO> countOrdersByStatus();
 }
