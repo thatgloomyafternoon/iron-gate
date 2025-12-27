@@ -23,4 +23,14 @@ public interface PermissionRepository
               + "r.deletedAt IS NULL AND "
               + "rp.deletedAt IS NULL")
   List<Permission> findAllActiveByRoleIdAndResourcePath(UUID roleId, String resourcePath);
+
+  @Query(
+      value =
+          "SELECT p FROM Permission p "
+              + "JOIN FETCH p.role r "
+              + "JOIN FETCH p.resourcePath rp "
+              + "WHERE p.deletedAt IS NULL AND "
+              + "r.deletedAt IS NULL AND "
+              + "rp.deletedAt IS NULL")
+  List<Permission> findAllActive();
 }
