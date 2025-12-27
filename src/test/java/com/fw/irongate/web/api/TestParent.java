@@ -3,6 +3,7 @@ package com.fw.irongate.web.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fw.irongate.models.entities.Permission;
 import com.fw.irongate.models.entities.Product;
+import com.fw.irongate.models.entities.Shipment;
 import com.fw.irongate.models.entities.Stock;
 import com.fw.irongate.models.entities.Sysconfig;
 import com.fw.irongate.models.entities.SysconfigType;
@@ -12,6 +13,7 @@ import com.fw.irongate.models.entities.WarehouseUser;
 import com.fw.irongate.repositories.PermissionRepository;
 import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.repositories.RevokedTokenRepository;
+import com.fw.irongate.repositories.ShipmentRepository;
 import com.fw.irongate.repositories.StockRepository;
 import com.fw.irongate.repositories.SysconfigRepository;
 import com.fw.irongate.repositories.SysconfigTypeRepository;
@@ -36,6 +38,7 @@ public abstract class TestParent {
   @Autowired protected WarehouseRepository warehouseRepository;
   @Autowired protected StockRepository stockRepository;
   @Autowired protected WarehouseUserRepository warehouseUserRepository;
+  @Autowired protected ShipmentRepository shipmentRepository;
   @Autowired protected JwtUtil jwtUtil;
 
   @Autowired protected MockMvc mockMvc;
@@ -43,6 +46,7 @@ public abstract class TestParent {
   @Autowired protected ObjectMapper objectMapper;
 
   protected void deleteAll() {
+    shipmentRepository.deleteAll();
     stockRepository.deleteAll();
     productRepository.deleteAll();
     warehouseUserRepository.deleteAll();
@@ -123,6 +127,25 @@ public abstract class TestParent {
     stock.setQuantity(quantity);
     stock.setAllocated(allocated);
     return stockRepository.save(stock);
+  }
+
+  protected Shipment createShipment(
+      Stock stock,
+      Warehouse destWarehouse,
+      Integer quantity,
+      String status,
+      String code,
+      String assignedTo) {
+    Shipment shipment = new Shipment();
+    shipment.setCreatedBy("system");
+    shipment.setUpdatedBy("system");
+    shipment.setStock(stock);
+    shipment.setDestWarehouse(destWarehouse);
+    shipment.setQuantity(quantity);
+    shipment.setStatus(status);
+    shipment.setCode(code);
+    shipment.setAssignedTo(assignedTo);
+    return shipmentRepository.save(shipment);
   }
 
   protected WarehouseUser createWarehouseUser(Warehouse warehouse, User user) {
