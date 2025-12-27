@@ -1,11 +1,12 @@
 ### Tech Stack
-- Java
-- Spring Boot
-- Spring SSE
-- Hibernate
-- PostgreSQL
-- JUnit
-- Gradle
-- Flyway
-- React TS
+- Java 21
+- Spring Boot 3.5.8
+- Spring SSE 6.2.14
+- Hibernate 6.6.36
+- PostgreSQL 14
+- JUnit 5.12.2
+- Gradle 9.2.1
+- Flyway 11.19.1
+- React 19.2.0
+- TypeScript 5.9.3
 - Docker
