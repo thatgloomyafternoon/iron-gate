@@ -1,4 +1,46 @@
-create table if not exists permissions (
+create table counters (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  next integer not null,
+  primary key (id)
+);
+
+create table orders (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  customer_name varchar(255) not null,
+  status varchar(255) not null,
+  total_price numeric(22,2) not null,
+  warehouse_id uuid not null,
+  primary key (id)
+);
+
+create table orders_products (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  price numeric(19,2) not null,
+  quantity integer not null,
+  order_id uuid not null,
+  product_id uuid not null,
+  primary key (id)
+);
+
+create table permissions (
   id uuid not null,
   created_at timestamp(6) with time zone not null,
   created_by varchar(255) not null,
@@ -8,6 +50,21 @@ create table if not exists permissions (
   updated_by varchar(255) not null,
   resource_path_id uuid not null,
   role_id uuid not null,
+  primary key (id)
+);
+
+create table products (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  description varchar(255),
+  name varchar(255) not null,
+  price numeric(19,2) not null,
+  sku varchar(255) not null unique,
   primary key (id)
 );
 
@@ -21,6 +78,38 @@ create table revoked_tokens (
   updated_by varchar(255) not null,
   expired_at timestamp(6) with time zone not null,
   jwt varchar(1000) not null unique,
+  primary key (id)
+);
+
+create table shipments (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  assigned_to varchar(255),
+  code varchar(255) not null,
+  quantity integer not null,
+  status varchar(255) not null,
+  warehouse_id uuid not null,
+  stock_id uuid not null,
+  primary key (id)
+);
+
+create table stocks (
+  id uuid not null,
+  created_at timestamp(6) with time zone not null,
+  created_by varchar(255) not null,
+  deleted_at timestamp(6) with time zone,
+  deleted_by varchar(255),
+  updated_at timestamp(6) with time zone not null,
+  updated_by varchar(255) not null,
+  allocated integer not null,
+  quantity integer not null,
+  product_id uuid not null,
+  warehouse_id uuid not null,
   primary key (id)
 );
 
@@ -66,21 +155,6 @@ create table users (
   primary key (id)
 );
 
-create table products (
-  id uuid not null,
-  created_at timestamp(6) with time zone not null,
-  created_by varchar(255) not null,
-  deleted_at timestamp(6) with time zone,
-  deleted_by varchar(255),
-  updated_at timestamp(6) with time zone not null,
-  updated_by varchar(255) not null,
-  description varchar(255),
-  name varchar(255) not null,
-  price numeric(19,2) not null,
-  sku varchar(255) not null unique,
-  primary key (id)
-);
-
 create table warehouses (
   id uuid not null,
   created_at timestamp(6) with time zone not null,
@@ -90,21 +164,7 @@ create table warehouses (
   updated_at timestamp(6) with time zone not null,
   updated_by varchar(255) not null,
   code varchar(255) not null,
-  name varchar(255) not null,
-  primary key (id)
-);
-
-create table stocks (
-  id uuid not null,
-  created_at timestamp(6) with time zone not null,
-  created_by varchar(255) not null,
-  deleted_at timestamp(6) with time zone,
-  deleted_by varchar(255),
-  updated_at timestamp(6) with time zone not null,
-  updated_by varchar(255) not null,
-  quantity integer not null,
-  product_id uuid not null,
-  warehouse_id uuid not null,
+  name varchar(255) not null unique,
   primary key (id)
 );
 
@@ -121,23 +181,38 @@ create table warehouses_users (
   primary key (id)
 );
 
+alter table if exists orders
+add constraint FKqvkyvljlb5ejgs7u5wyqby4g1 foreign key (warehouse_id) references warehouses;
+
+alter table if exists orders_products
+add constraint FKe4y1sseio787e4o5hrml7omt5 foreign key (order_id) references orders;
+
+alter table if exists orders_products
+add constraint FK43vke5jd6eyasd92t3k24kdxq foreign key (product_id) references products;
+
 alter table if exists permissions
 add constraint FKgbbliiluax6e4bwk5qxohc2fy foreign key (resource_path_id) references sysconfigs;
 
 alter table if exists permissions
 add constraint FKdxol2q5vlrf4ybqx7r82imj4r foreign key (role_id) references sysconfigs;
 
-alter table if exists sysconfigs
-add constraint FK58x4i5xuxqpgd5fqulv9yfej3 foreign key (sysconfig_type_id) references sysconfig_types;
+alter table if exists shipments
+add constraint FK93kqi7kqar4tgmu0h1apoqdn1 foreign key (warehouse_id) references warehouses;
 
-alter table if exists users
-add constraint FK7hhxskfp2mwm6k9fwef36n0hx foreign key (role_id) references sysconfigs;
+alter table if exists shipments
+add constraint FKq25g3n7gayps0kmlkgnfybytl foreign key (stock_id) references stocks;
 
 alter table if exists stocks
 add constraint FKff7be959jyco0iukc1dcjj9qm foreign key (product_id) references products;
 
 alter table if exists stocks
 add constraint FKjftt43i266337pt7y8b291hpx foreign key (warehouse_id) references warehouses;
+
+alter table if exists sysconfigs
+add constraint FK58x4i5xuxqpgd5fqulv9yfej3 foreign key (sysconfig_type_id) references sysconfig_types;
+
+alter table if exists users
+add constraint FK7hhxskfp2mwm6k9fwef36n0hx foreign key (role_id) references sysconfigs;
 
 alter table if exists warehouses_users
 add constraint FKiwp5n3ghb267uuu0hml1t282h foreign key (user_id) references users;
