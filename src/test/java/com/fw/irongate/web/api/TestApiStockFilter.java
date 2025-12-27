@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+@SuppressWarnings("SameParameterValue")
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,8 +36,9 @@ import org.springframework.test.context.TestPropertySource;
 class TestApiStockFilter extends TestParent {
 
   private Cookie cookieAm;
-  private Cookie cookieXx;
   private Cookie cookieWm;
+  private Cookie cookieWd;
+  private Cookie cookieXx;
   private Cookie cookieYy;
 
   @BeforeAll
@@ -51,7 +53,6 @@ class TestApiStockFilter extends TestParent {
 
   @Test
   void givenNoPermission_assert403() throws Exception {
-    /* test */
     mockMvc
         .perform(get("/api/stock/filter").cookie(cookieXx).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -59,15 +60,28 @@ class TestApiStockFilter extends TestParent {
 
   @Test
   void givenNoWarehouseMapping_assert400() throws Exception {
-    /* test */
     mockMvc
         .perform(get("/api/stock/filter").cookie(cookieYy).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
 
   @Test
-  void givenOneWarehouseMapping_assert200_andCorrectReturnData() throws Exception {
-    /* test */
+  void givenAreaManager_assert200_andAllStocksFromAssignedWarehouses() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/stock/filter").cookie(cookieAm).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* AM assigned to Hachioji (2 products) and Tachikawa (2 products). Should see 4 stocks. */
+    assertEquals(4, stocks.totalItems());
+  }
+
+  @Test
+  void givenWarehouseManager_assert200_andStocksFromOwnWarehouse() throws Exception {
     String string =
         mockMvc
             .perform(
@@ -77,45 +91,34 @@ class TestApiStockFilter extends TestParent {
             .getResponse()
             .getContentAsString();
     PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* WM assigned to Hachioji. Should see 2 stocks. */
     assertEquals(2, stocks.totalItems());
     assertEquals("Hachioji", stocks.data().getFirst().warehouse());
-    assertEquals("Product 2", stocks.data().getFirst().productName());
-    assertEquals(11, stocks.data().getFirst().quantity());
-    assertEquals("Hachioji", stocks.data().get(1).warehouse());
-    assertEquals("Product 1", stocks.data().get(1).productName());
-    assertEquals(10, stocks.data().get(1).quantity());
   }
 
   @Test
-  void givenOneWarehouseMappingAndProductName_assert200_andCorrectReturnData() throws Exception {
-    /* test */
+  void givenDriver_assert200_andStocksFromRegisteredWarehouse() throws Exception {
     String string =
         mockMvc
             .perform(
-                get("/api/stock/filter")
-                    .param("query", "product 1")
-                    .cookie(cookieWm)
-                    .contentType(MediaType.APPLICATION_JSON))
+                get("/api/stock/filter").cookie(cookieWd).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getContentAsString();
     PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
-    assertEquals(1, stocks.totalItems());
-    assertEquals("Hachioji", stocks.data().getFirst().warehouse());
-    assertEquals("Product 1", stocks.data().getFirst().productName());
-    assertEquals(10, stocks.data().getFirst().quantity());
+    /* Driver assigned to Tachikawa. Should see 2 stocks. */
+    assertEquals(2, stocks.totalItems());
+    assertEquals("Tachikawa", stocks.data().getFirst().warehouse());
   }
 
   @Test
-  void givenAllWarehouseMappingsAndSkuAndMaxQty_assert200_andCorrectReturnData() throws Exception {
-    /* test */
+  void givenFilterByWarehouseName_assert200() throws Exception {
     String string =
         mockMvc
             .perform(
                 get("/api/stock/filter")
-                    .param("query", "tech")
-                    .param("maxQuantity", "13")
+                    .param("warehouseName", "Hachioji")
                     .cookie(cookieAm)
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -123,13 +126,72 @@ class TestApiStockFilter extends TestParent {
             .getResponse()
             .getContentAsString();
     PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Should see 2 stocks from Hachioji */
     assertEquals(2, stocks.totalItems());
-    assertEquals("Tachikawa", stocks.data().getFirst().warehouse());
-    assertEquals("Product 4", stocks.data().getFirst().productName());
-    assertEquals(13, stocks.data().getFirst().quantity());
-    assertEquals("Hachioji", stocks.data().get(1).warehouse());
-    assertEquals("Product 2", stocks.data().get(1).productName());
-    assertEquals(11, stocks.data().get(1).quantity());
+    assertEquals("Hachioji", stocks.data().getFirst().warehouse());
+  }
+
+  @Test
+  void givenFilterByProductName_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/stock/filter")
+                    .param("productName", "Product 1")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Product 1 exists in both warehouses. */
+    assertEquals(2, stocks.totalItems());
+    assertEquals("Product 1", stocks.data().getFirst().productName());
+  }
+
+  @Test
+  void givenFilterByMaxQuantity_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/stock/filter")
+                    .param("maxQuantity", "150")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Hachioji: P1(100), P2(200). Tachikawa: P1(300), P2(400).
+    Max 150 -> Only Hachioji P1 (100). */
+    assertEquals(1, stocks.totalItems());
+    assertEquals("Product 1", stocks.data().getFirst().productName());
+    assertEquals("Hachioji", stocks.data().getFirst().warehouse());
+  }
+
+  @Test
+  void givenFilterByProductNameAndMaxQuantity_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/stock/filter")
+                    .param("productName", "Product 1")
+                    .param("maxQuantity", "150")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<StockDTO> stocks = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Hachioji P1(100) - Match
+    Tachikawa P1(300) - No Match (>150)
+    Others - No Match (Product name) */
+    assertEquals(1, stocks.totalItems());
+    assertEquals("Product 1", stocks.data().getFirst().productName());
+    assertEquals("Hachioji", stocks.data().getFirst().warehouse());
   }
 
   private void setup() throws Exception {
@@ -137,19 +199,45 @@ class TestApiStockFilter extends TestParent {
     SysconfigType rp = createSysconfigType("RESOURCE_PATH", "desc");
     Sysconfig rAm = createSysconfig(r, "AREA_MANAGER", "Area Manager");
     Sysconfig rWm = createSysconfig(r, "WAREHOUSE_MANAGER", "Warehouse Manager");
+    Sysconfig rWd = createSysconfig(r, "WAREHOUSE_DRIVER", "Warehouse Driver");
     Sysconfig rXx = createSysconfig(r, "XX", "XX");
     Sysconfig rYy = createSysconfig(r, "YY", "YY");
     Sysconfig rpAsf = createSysconfig(rp, "API_STOCK_FILTER", "/api/stock/filter");
     User uAm =
-        createUser(rAm, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+        createUser(rAm, "am@mail.com", bCryptPasswordEncoder.encode("password"), "Area Manager");
     User uWm =
-        createUser(rWm, "wm@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
-    createUser(rXx, "xx@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
-    createUser(rYy, "yy@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+        createUser(
+            rWm, "wm@mail.com", bCryptPasswordEncoder.encode("password"), "Warehouse Manager");
+    User uWd =
+        createUser(
+            rWd, "wd@mail.com", bCryptPasswordEncoder.encode("password"), "Warehouse Driver");
+    createUser(rXx, "xx@mail.com", bCryptPasswordEncoder.encode("password"), "NoPerm");
+    createUser(rYy, "yy@mail.com", bCryptPasswordEncoder.encode("password"), "NoWh");
     createPermission(rAm, rpAsf);
     createPermission(rWm, rpAsf);
+    createPermission(rWd, rpAsf);
     createPermission(rYy, rpAsf);
-    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    cookieAm = login("am@mail.com", "password");
+    cookieWm = login("wm@mail.com", "password");
+    cookieWd = login("wd@mail.com", "password");
+    cookieXx = login("xx@mail.com", "password");
+    cookieYy = login("yy@mail.com", "password");
+    Warehouse hachioji = createWarehouse("Hachioji", "HAC");
+    Warehouse tachikawa = createWarehouse("Tachikawa", "TAC");
+    Product product1 = createProduct("Product 1", "P-01", "desc", new BigDecimal("10.00"));
+    Product product2 = createProduct("Product 2", "P-02", "desc", new BigDecimal("20.00"));
+    createStock(hachioji, product1, 100, 0);
+    createStock(hachioji, product2, 200, 0);
+    createStock(tachikawa, product1, 300, 0);
+    createStock(tachikawa, product2, 400, 0);
+    createWarehouseUser(hachioji, uAm);
+    createWarehouseUser(tachikawa, uAm);
+    createWarehouseUser(hachioji, uWm);
+    createWarehouseUser(tachikawa, uWd);
+  }
+
+  private Cookie login(String email, String password) throws Exception {
+    LoginRequest request = new LoginRequest(email, password);
     String cookieValue =
         Objects.requireNonNull(
                 mockMvc
@@ -163,64 +251,6 @@ class TestApiStockFilter extends TestParent {
                     .getResponse()
                     .getCookie(COOKIE_NAME))
             .getValue();
-    cookieAm = new Cookie(COOKIE_NAME, cookieValue);
-    request = new LoginRequest("wm@mail.com", "password");
-    cookieValue =
-        Objects.requireNonNull(
-                mockMvc
-                    .perform(
-                        post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk())
-                    .andExpect(cookie().exists(COOKIE_NAME))
-                    .andReturn()
-                    .getResponse()
-                    .getCookie(COOKIE_NAME))
-            .getValue();
-    cookieWm = new Cookie(COOKIE_NAME, cookieValue);
-    request = new LoginRequest("xx@mail.com", "password");
-    cookieValue =
-        Objects.requireNonNull(
-                mockMvc
-                    .perform(
-                        post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk())
-                    .andExpect(cookie().exists(COOKIE_NAME))
-                    .andReturn()
-                    .getResponse()
-                    .getCookie(COOKIE_NAME))
-            .getValue();
-    cookieXx = new Cookie(COOKIE_NAME, cookieValue);
-    request = new LoginRequest("yy@mail.com", "password");
-    cookieValue =
-        Objects.requireNonNull(
-                mockMvc
-                    .perform(
-                        post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk())
-                    .andExpect(cookie().exists(COOKIE_NAME))
-                    .andReturn()
-                    .getResponse()
-                    .getCookie(COOKIE_NAME))
-            .getValue();
-    cookieYy = new Cookie(COOKIE_NAME, cookieValue);
-    Warehouse hachioji = createWarehouse("Hachioji", "HAC");
-    Warehouse tachikawa = createWarehouse("Tachikawa", "TAC");
-    Product product1 = createProduct("Product 1", "ACC-01", "asd", new BigDecimal("10.10"));
-    Product product2 = createProduct("Product 2", "TECH-01", "asd", new BigDecimal("11.11"));
-    Product product3 = createProduct("Product 3", "ACC-02", "asd", new BigDecimal("12.12"));
-    Product product4 = createProduct("Product 4", "TECH-02", "asd", new BigDecimal("13.13"));
-    createStock(hachioji, product1, 10, 0);
-    createStock(hachioji, product2, 11, 0);
-    createStock(tachikawa, product3, 12, 0);
-    createStock(tachikawa, product4, 13, 0);
-    createWarehouseUser(hachioji, uWm);
-    createWarehouseUser(hachioji, uAm);
-    createWarehouseUser(tachikawa, uAm);
+    return new Cookie(COOKIE_NAME, cookieValue);
   }
 }

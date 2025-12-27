@@ -40,11 +40,13 @@ public class StockController {
   @GetMapping("/filter")
   public ResponseEntity<PaginatedResponse<StockDTO>> filter(
       @AuthenticationPrincipal JwtClaimDTO jwtClaimDTO,
-      @RequestParam(required = false) String query,
+      @RequestParam(required = false) String warehouseName,
+      @RequestParam(required = false) String productName,
       @RequestParam(required = false) Integer maxQuantity,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
-    FilterStockRequest request = new FilterStockRequest(query, maxQuantity, page, size);
+    FilterStockRequest request =
+        new FilterStockRequest(warehouseName, productName, maxQuantity, page, size);
     return ResponseEntity.ok(filterStockUseCase.handle(jwtClaimDTO, request));
   }
 

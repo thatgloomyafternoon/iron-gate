@@ -19,18 +19,19 @@ public class StockSpecification {
         root.fetch("warehouse");
       }
       List<Predicate> predicates = new ArrayList<>();
-      if (request.query() != null && !request.query().isBlank()) {
-        String searchPattern = "%" + request.query().toLowerCase() + "%";
+      if (request.warehouseName() != null && !request.warehouseName().isBlank()) {
+        String searchPattern = "%" + request.warehouseName().toLowerCase() + "%";
         Predicate warehouseNameMatch =
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("warehouse").get("name")), searchPattern);
+        predicates.add(warehouseNameMatch);
+      }
+      if (request.productName() != null && !request.productName().isBlank()) {
+        String searchPattern = "%" + request.productName().toLowerCase() + "%";
         Predicate productNameMatch =
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("product").get("name")), searchPattern);
-        Predicate skuMatch =
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("product").get("sku")), searchPattern);
-        predicates.add(criteriaBuilder.or(warehouseNameMatch, productNameMatch, skuMatch));
+        predicates.add(productNameMatch);
       }
       if (request.maxQuantity() != null) {
         predicates.add(
