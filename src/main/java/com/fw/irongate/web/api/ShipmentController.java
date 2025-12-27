@@ -45,8 +45,31 @@ public class ShipmentController {
 
   @GetMapping("/filter")
   public ResponseEntity<PaginatedResponse<ShipmentDTO>> filter(
-      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-    return ResponseEntity.ok(filterShipmentUseCase.handle(new FilterShipmentRequest(page, size)));
+      @AuthenticationPrincipal JwtClaimDTO jwtClaimDTO,
+      @RequestParam(required = false) String code,
+      @RequestParam(required = false) String productName,
+      @RequestParam(required = false) Integer minQuantity,
+      @RequestParam(required = false) Integer maxQuantity,
+      @RequestParam(required = false) String from,
+      @RequestParam(required = false) String to,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) String assignedTo,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return ResponseEntity.ok(
+        filterShipmentUseCase.handle(
+            jwtClaimDTO,
+            new FilterShipmentRequest(
+                code,
+                productName,
+                minQuantity,
+                maxQuantity,
+                from,
+                to,
+                status,
+                assignedTo,
+                page,
+                size)));
   }
 
   @PostMapping("/create")

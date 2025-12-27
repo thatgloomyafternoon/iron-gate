@@ -3,22 +3,12 @@ package com.fw.irongate.repositories;
 import com.fw.irongate.models.entities.Shipment;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
-public interface ShipmentRepository extends JpaRepository<Shipment, UUID> {
-
-  @Query(
-      value =
-          "SELECT sh FROM Shipment sh "
-              + "JOIN FETCH sh.stock "
-              + "JOIN FETCH sh.stock.product "
-              + "JOIN FETCH sh.stock.warehouse "
-              + "JOIN FETCH sh.destWarehouse "
-              + "WHERE sh.deletedAt IS NULL")
-  Page<Shipment> findAllWithRelations(Pageable pageable);
+public interface ShipmentRepository
+    extends JpaRepository<Shipment, UUID>, JpaSpecificationExecutor<Shipment> {
 
   @Query(
       value =
