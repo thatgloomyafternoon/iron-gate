@@ -13,7 +13,6 @@ import com.fw.irongate.repositories.WarehouseUserRepository;
 import com.fw.irongate.repositories.specs.OrderSpecification;
 import com.fw.irongate.usecases.UseCase;
 import com.fw.irongate.web.responses.PaginatedResponse;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -57,15 +56,11 @@ public class FilterOrderUseCase {
                               op ->
                                   new OrderProductDTO(op.getProduct().getName(), op.getQuantity()))
                           .toList();
-                  BigDecimal totalPrice =
-                      order.getOrderProducts().stream()
-                          .map(op -> op.getPrice().multiply(BigDecimal.valueOf(op.getQuantity())))
-                          .reduce(BigDecimal.ZERO, BigDecimal::add);
                   return new OrderDTO(
                       order.getId(),
                       order.getCustomerName(),
                       productDTOs,
-                      totalPrice,
+                      order.getTotalPrice(),
                       order.getWarehouse().getName(),
                       order.getStatus(),
                       order.getUpdatedAt(),

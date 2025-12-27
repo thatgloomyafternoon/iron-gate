@@ -1,6 +1,16 @@
 package com.fw.irongate.usecases.filter_order;
 
-public record FilterOrderRequest(String query, int page, int size) {
+import java.math.BigDecimal;
+
+public record FilterOrderRequest(
+    String customerName,
+    String toWarehouse,
+    String productName,
+    BigDecimal minTotalPrice,
+    BigDecimal maxTotalPrice,
+    String status,
+    int page,
+    int size) {
 
   public FilterOrderRequest {
     if (page < 0) page = 0;

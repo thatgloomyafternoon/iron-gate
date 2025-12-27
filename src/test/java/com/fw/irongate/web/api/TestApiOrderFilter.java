@@ -1,97 +1,289 @@
 package com.fw.irongate.web.api;
 
+import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fw.irongate.models.dto.JwtClaimDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fw.irongate.models.dto.OrderDTO;
-import com.fw.irongate.usecases.filter_order.FilterOrderRequest;
-import com.fw.irongate.usecases.filter_order.FilterOrderUseCase;
+import com.fw.irongate.models.entities.Order;
+import com.fw.irongate.models.entities.Product;
+import com.fw.irongate.models.entities.Sysconfig;
+import com.fw.irongate.models.entities.SysconfigType;
+import com.fw.irongate.models.entities.User;
+import com.fw.irongate.models.entities.Warehouse;
+import com.fw.irongate.models.enums.OrderStatus;
+import com.fw.irongate.usecases.login.LoginRequest;
 import com.fw.irongate.web.responses.PaginatedResponse;
+import jakarta.servlet.http.Cookie;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Objects;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
-@ExtendWith(MockitoExtension.class)
-class TestApiOrderFilter {
+@SuppressWarnings("SameParameterValue")
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource("classpath:application-test.properties")
+class TestApiOrderFilter extends TestParent {
 
-  @Mock private FilterOrderUseCase filterOrderUseCase;
-  @InjectMocks private OrderController orderController;
+  private Cookie cookieAm;
+  private Cookie cookieWm;
+  private Cookie cookieWd;
+  private Cookie cookieXx;
+  private Cookie cookieYy;
 
-  private JwtClaimDTO mockJwt;
+  @BeforeAll
+  void beforeAll() throws Exception {
+    setup();
+  }
 
-  @BeforeEach
-  void setUp() {
-    mockJwt =
-        new JwtClaimDTO(
-            UUID.randomUUID(), "test@example.com", UUID.randomUUID(), "ROLE_ADMIN", "Admin");
+  @AfterAll
+  void afterAll() {
+    deleteAll();
   }
 
   @Test
-  void filter_ShouldReturn200AndData_WhenSuccessful() {
-    /* 1. Arrange */
-    String query = "customer";
-    int page = 0;
-    int size = 10;
-    FilterOrderRequest expectedRequest = new FilterOrderRequest(query, page, size);
-    OrderDTO orderDTO =
-        new OrderDTO(
-            UUID.randomUUID(),
-            "Customer Name",
-            Collections.emptyList(),
-            BigDecimal.TEN,
-            "NYC",
-            "CREATED",
-            ZonedDateTime.now(),
-            "admin");
-    PaginatedResponse<OrderDTO> mockResponse = new PaginatedResponse<>(List.of(orderDTO), 0, 1, 1);
-    when(filterOrderUseCase.handle(eq(mockJwt), eq(expectedRequest))).thenReturn(mockResponse);
-    /* 2. Act */
-    ResponseEntity<PaginatedResponse<OrderDTO>> response =
-        orderController.filter(mockJwt, query, page, size);
-    /* 3. Assert */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(1, response.getBody().totalItems());
-    verify(filterOrderUseCase).handle(eq(mockJwt), eq(expectedRequest));
+  void givenNoPermission_assert403() throws Exception {
+    mockMvc
+        .perform(get("/api/order/filter").cookie(cookieXx).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
   }
 
   @Test
-  void filter_ShouldHandleNullParameters() {
-    /* 1. Arrange */
-    int page = 0;
-    int size = 10;
-    /* Null query */
-    /* Note: The controller defines default value as empty string for query if missing, */
-    /* but if passed explicitly as null (which can happen in Java method call, though Spring might */
-    /* convert it), */
-    /* let's check what value we expect. The controller says: */
-    /* @RequestParam(name = "query", required = false, defaultValue = "") String query */
-    /* So if I call the method with null, it receives null. */
-    /* If I call the API without the param, Spring passes "". */
-    /* In this unit test I am calling the method directly. */
-    FilterOrderRequest expectedRequest = new FilterOrderRequest(null, page, size);
-    PaginatedResponse<OrderDTO> mockResponse = new PaginatedResponse<>(List.of(), 0, 0, 0);
-    when(filterOrderUseCase.handle(eq(mockJwt), eq(expectedRequest))).thenReturn(mockResponse);
-    /* 2. Act */
-    ResponseEntity<PaginatedResponse<OrderDTO>> response =
-        orderController.filter(mockJwt, null, page, size);
-    /* 3. Assert */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    verify(filterOrderUseCase).handle(eq(mockJwt), eq(expectedRequest));
+  void givenNoWarehouseMapping_assert400() throws Exception {
+    mockMvc
+        .perform(get("/api/order/filter").cookie(cookieYy).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenAreaManager_assert200_andAllOrdersFromAssignedWarehouses() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter").cookie(cookieAm).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* AM assigned to Hachioji (2 orders) and Tachikawa (1 order). Should see 3 orders. */
+    assertEquals(3, orders.totalItems());
+  }
+
+  @Test
+  void givenWarehouseManager_assert200_andOrdersFromOwnWarehouse() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter").cookie(cookieWm).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* WM assigned to Hachioji. Should see 2 orders. */
+    assertEquals(2, orders.totalItems());
+    assertEquals("Hachioji", orders.data().getFirst().warehouse());
+  }
+
+  @Test
+  void givenDriver_assert403() throws Exception {
+    /* Drivers cannot view Orders menu per requirements */
+    mockMvc
+        .perform(get("/api/order/filter").cookie(cookieWd).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void givenFilterByCustomerName_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("customerName", "Customer 1")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    assertEquals(1, orders.totalItems());
+    assertEquals("Customer 1", orders.data().getFirst().customerName());
+  }
+
+  @Test
+  void givenFilterByToWarehouse_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("toWarehouse", "Hachioji")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    assertEquals(2, orders.totalItems());
+    assertEquals("Hachioji", orders.data().getFirst().warehouse());
+  }
+
+  @Test
+  void givenFilterByProductName_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("productName", "Product 1")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Product 1 is in Order 1 (Hachioji) and Order 3 (Tachikawa). */
+    assertEquals(2, orders.totalItems());
+  }
+
+  @Test
+  void givenFilterByMinTotalPrice_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("minTotalPrice", "55.00")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Order 2 is 60.00. */
+    assertEquals(1, orders.totalItems());
+    assertEquals("Customer 2", orders.data().getFirst().customerName());
+  }
+
+  @Test
+  void givenFilterByMaxTotalPrice_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("maxTotalPrice", "55.00")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Order 1 is 50.00, Order 3 is 20.00. */
+    assertEquals(2, orders.totalItems());
+  }
+
+  @Test
+  void givenFilterByStatus_assert200() throws Exception {
+    String string =
+        mockMvc
+            .perform(
+                get("/api/order/filter")
+                    .param("status", "COMPLETED")
+                    .cookie(cookieAm)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    PaginatedResponse<OrderDTO> orders = objectMapper.readValue(string, new TypeReference<>() {});
+    /* Order 2 is COMPLETED. */
+    assertEquals(1, orders.totalItems());
+    assertEquals("Customer 2", orders.data().getFirst().customerName());
+  }
+
+  private void setup() throws Exception {
+    SysconfigType r = createSysconfigType("ROLE", "desc");
+    SysconfigType rp = createSysconfigType("RESOURCE_PATH", "desc");
+    Sysconfig rAm = createSysconfig(r, "AREA_MANAGER", "Area Manager");
+    Sysconfig rWm = createSysconfig(r, "WAREHOUSE_MANAGER", "Warehouse Manager");
+    Sysconfig rWd = createSysconfig(r, "WAREHOUSE_DRIVER", "Warehouse Driver");
+    Sysconfig rXx = createSysconfig(r, "XX", "XX");
+    Sysconfig rYy = createSysconfig(r, "YY", "YY");
+    Sysconfig rpAof = createSysconfig(rp, "API_ORDER_FILTER", "/api/order/filter");
+    User uAm =
+        createUser(rAm, "am@mail.com", bCryptPasswordEncoder.encode("password"), "Area Manager");
+    User uWm =
+        createUser(
+            rWm, "wm@mail.com", bCryptPasswordEncoder.encode("password"), "Warehouse Manager");
+    User uWd =
+        createUser(
+            rWd, "wd@mail.com", bCryptPasswordEncoder.encode("password"), "Warehouse Driver");
+    createUser(rXx, "xx@mail.com", bCryptPasswordEncoder.encode("password"), "NoPerm");
+    createUser(rYy, "yy@mail.com", bCryptPasswordEncoder.encode("password"), "NoWh");
+    createPermission(rAm, rpAof);
+    createPermission(rWm, rpAof);
+    /* Driver does NOT have permission for Order Filter */
+    createPermission(rYy, rpAof);
+    cookieAm = login("am@mail.com", "password");
+    cookieWm = login("wm@mail.com", "password");
+    cookieWd = login("wd@mail.com", "password");
+    cookieXx = login("xx@mail.com", "password");
+    cookieYy = login("yy@mail.com", "password");
+    Warehouse hachioji = createWarehouse("Hachioji", "HAC");
+    Warehouse tachikawa = createWarehouse("Tachikawa", "TAC");
+    Product product1 = createProduct("Product 1", "P-01", "desc", new BigDecimal("10.00"));
+    Product product2 = createProduct("Product 2", "P-02", "desc", new BigDecimal("20.00"));
+    /* Create Orders */
+    /* Order 1: Hachioji, Customer 1, Product 1 (5 qty) -> 50.00, PENDING */
+    Order order1 =
+        createOrder(hachioji, "Customer 1", OrderStatus.PENDING.name(), new BigDecimal("50.00"));
+    createOrderProduct(order1, product1, 5, new BigDecimal("10.00"));
+    Thread.sleep(10); /* Ensure timestamp diff for sort order */
+    /* Order 2: Hachioji, Customer 2, Product 2 (3 qty) -> 60.00, COMPLETED */
+    Order order2 =
+        createOrder(hachioji, "Customer 2", OrderStatus.COMPLETED.name(), new BigDecimal("60.00"));
+    createOrderProduct(order2, product2, 3, new BigDecimal("20.00"));
+    Thread.sleep(10);
+    /* Order 3: Tachikawa, Customer 3, Product 1 (2 qty) -> 20.00, PENDING */
+    Order order3 =
+        createOrder(tachikawa, "Customer 3", OrderStatus.PENDING.name(), new BigDecimal("20.00"));
+    createOrderProduct(order3, product1, 2, new BigDecimal("10.00"));
+    createWarehouseUser(hachioji, uAm);
+    createWarehouseUser(tachikawa, uAm);
+    createWarehouseUser(hachioji, uWm);
+    createWarehouseUser(tachikawa, uWd);
+  }
+
+  private Cookie login(String email, String password) throws Exception {
+    LoginRequest request = new LoginRequest(email, password);
+    String cookieValue =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    return new Cookie(COOKIE_NAME, cookieValue);
   }
 }

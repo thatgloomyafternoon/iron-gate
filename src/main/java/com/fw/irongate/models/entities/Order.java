@@ -8,8 +8,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Table(name = "orders")
 @Entity
 public class Order extends BaseEntity {
@@ -25,6 +28,10 @@ public class Order extends BaseEntity {
   @Column(name = "status", nullable = false)
   @NotBlank
   private String status;
+
+  @Column(name = "total_price", nullable = false, precision = 22, scale = 2)
+  @Positive
+  private BigDecimal totalPrice;
 
   @OneToMany(mappedBy = "order")
   private List<OrderProduct> orderProducts;
@@ -51,6 +58,14 @@ public class Order extends BaseEntity {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  public BigDecimal getTotalPrice() {
+    return totalPrice;
+  }
+
+  public void setTotalPrice(BigDecimal totalPrice) {
+    this.totalPrice = totalPrice;
   }
 
   public List<OrderProduct> getOrderProducts() {

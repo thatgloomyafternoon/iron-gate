@@ -17,6 +17,7 @@ import com.fw.irongate.repositories.SysconfigRepository;
 import com.fw.irongate.repositories.WarehouseRepository;
 import com.fw.irongate.usecases.UseCase;
 import com.fw.irongate.usecases.stream_dashboard.StreamDashboardUseCase;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,7 +96,6 @@ public class Simulator {
     order.setCustomerName(customerName);
     order.setStatus(OrderStatus.PENDING.name());
     order.setWarehouse(getRandomWarehouse());
-    order = orderRepository.save(order);
     int n = random.nextInt(3) + 1;
     List<OrderProduct> orderProducts = new ArrayList<>();
     for (int i = 0; i < n; i++) {
@@ -108,6 +108,11 @@ public class Simulator {
       orderProduct.setOrder(order);
       orderProducts.add(orderProduct);
     }
+    order.setTotalPrice(
+        orderProducts.stream()
+            .map(op -> op.getPrice().multiply(BigDecimal.valueOf(op.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add));
+    orderRepository.save(order);
     orderProductRepository.saveAll(orderProducts);
     streamDashboardUseCase.broadcast(new DashboardEventDTO(EVENT_ORDER_CREATED));
   }

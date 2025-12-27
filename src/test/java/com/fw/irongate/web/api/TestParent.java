@@ -1,6 +1,8 @@
 package com.fw.irongate.web.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fw.irongate.models.entities.Order;
+import com.fw.irongate.models.entities.OrderProduct;
 import com.fw.irongate.models.entities.Permission;
 import com.fw.irongate.models.entities.Product;
 import com.fw.irongate.models.entities.Shipment;
@@ -10,6 +12,8 @@ import com.fw.irongate.models.entities.SysconfigType;
 import com.fw.irongate.models.entities.User;
 import com.fw.irongate.models.entities.Warehouse;
 import com.fw.irongate.models.entities.WarehouseUser;
+import com.fw.irongate.repositories.OrderProductRepository;
+import com.fw.irongate.repositories.OrderRepository;
 import com.fw.irongate.repositories.PermissionRepository;
 import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.repositories.RevokedTokenRepository;
@@ -39,6 +43,8 @@ public abstract class TestParent {
   @Autowired protected StockRepository stockRepository;
   @Autowired protected WarehouseUserRepository warehouseUserRepository;
   @Autowired protected ShipmentRepository shipmentRepository;
+  @Autowired protected OrderRepository orderRepository;
+  @Autowired protected OrderProductRepository orderProductRepository;
   @Autowired protected JwtUtil jwtUtil;
 
   @Autowired protected MockMvc mockMvc;
@@ -47,6 +53,8 @@ public abstract class TestParent {
 
   protected void deleteAll() {
     shipmentRepository.deleteAll();
+    orderProductRepository.deleteAll();
+    orderRepository.deleteAll();
     stockRepository.deleteAll();
     productRepository.deleteAll();
     warehouseUserRepository.deleteAll();
@@ -155,5 +163,29 @@ public abstract class TestParent {
     wu.setWarehouse(warehouse);
     wu.setUser(user);
     return warehouseUserRepository.save(wu);
+  }
+
+  protected Order createOrder(
+      Warehouse warehouse, String customerName, String status, BigDecimal totalPrice) {
+    Order order = new Order();
+    order.setCreatedBy("system");
+    order.setUpdatedBy("system");
+    order.setWarehouse(warehouse);
+    order.setCustomerName(customerName);
+    order.setStatus(status);
+    order.setTotalPrice(totalPrice);
+    return orderRepository.save(order);
+  }
+
+  protected OrderProduct createOrderProduct(
+      Order order, Product product, Integer quantity, BigDecimal price) {
+    OrderProduct op = new OrderProduct();
+    op.setCreatedBy("system");
+    op.setUpdatedBy("system");
+    op.setOrder(order);
+    op.setProduct(product);
+    op.setQuantity(quantity);
+    op.setPrice(price);
+    return orderProductRepository.save(op);
   }
 }
