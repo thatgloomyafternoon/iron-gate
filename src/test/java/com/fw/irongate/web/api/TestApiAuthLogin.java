@@ -1,80 +1,154 @@
 package com.fw.irongate.web.api;
 
 import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
-import static com.fw.irongate.constants.SystemConstants.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fw.irongate.models.dto.JwtClaimDTO;
+import com.fw.irongate.models.entities.Sysconfig;
+import com.fw.irongate.models.entities.SysconfigType;
+import com.fw.irongate.models.entities.User;
 import com.fw.irongate.usecases.login.LoginRequest;
-import com.fw.irongate.usecases.login.LoginUseCase;
-import com.fw.irongate.web.responses.MessageResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
-@ExtendWith(MockitoExtension.class)
-class TestApiAuthLogin {
-
-  @Mock private LoginUseCase loginUseCase;
-  @Mock private HttpServletResponse httpServletResponse;
-  @InjectMocks private AuthController authController;
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource("classpath:application-test.properties")
+class TestApiAuthLogin extends TestParent {
 
   @Test
-  void login_ShouldAddCookieToHeaderAndReturnOk_WhenRequestIsValid() {
-    /* 1. Arrange */
-    LoginRequest request = new LoginRequest("email", "password");
-    /* Prepare the expected cookie string */
-    String expectedCookieString = COOKIE_NAME + "=12345; Path=/; HttpOnly";
-    /* Mock the object returned by the UseCase */
-    /* We mock a generic Object to ensure we can control the .toString() output */
-    /* If your UseCase returns a specific type (e.g. ResponseCookie), you can mock that type instead. */
-    ResponseCookie cookie = mock(ResponseCookie.class);
-    when(cookie.toString()).thenReturn(expectedCookieString);
-    /* Mock the UseCase interaction */
-    /* Note: We use 'Mockito.any()' or the specific 'request' object */
-    when(loginUseCase.handle(request)).thenReturn(cookie);
-    /* 2. Act */
-    ResponseEntity<MessageResponse> response = authController.login(request, httpServletResponse);
-    /* 3. Assert */
-    /* Verify the status code is 200 OK */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(OK, response.getBody().message());
-    /* CRITICAL: Verify that the controller actually modified the HttpServletResponse */
-    /* This ensures the cookie logic is actually executing */
-    verify(httpServletResponse, times(1)).addHeader(HttpHeaders.SET_COOKIE, expectedCookieString);
+  void givenNullEmail_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest(null, "password");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
-  void login_ShouldPropagateException_WhenUseCaseFails() {
-    /* 1. Arrange */
-    LoginRequest request = new LoginRequest("email", "password");
-    /* Simulate the UseCase throwing a runtime exception (e.g. Invalid Credentials) */
-    /* specific exception class depends on your project, using RuntimeException here as placeholder */
-    RuntimeException expectedException = new RuntimeException("Invalid Credentials");
-    when(loginUseCase.handle(request)).thenThrow(expectedException);
-    /* 2. Act & Assert */
-    /* We expect the controller to simply let the exception bubble up */
-    /* (to be caught by @ControllerAdvice in the real app) */
-    RuntimeException thrown =
-        assertThrows(
-            RuntimeException.class, () -> authController.login(request, httpServletResponse));
-    assertEquals("Invalid Credentials", thrown.getMessage());
-    /* Verify we never tried to set the header since it crashed first */
-    verify(httpServletResponse, never()).addHeader(anyString(), anyString());
+  void givenEmptyEmail_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest("", "password");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenBlankEmail_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest("  ", "password");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenNullPassword_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest("system@mail.com", null);
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenEmptyPassword_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest("system@mail.com", "");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenBlankPassword_assert400() throws Exception {
+    /* setup */
+    LoginRequest request = new LoginRequest("system@mail.com", "  ");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenIncorrectPassword_assert403() throws Exception {
+    /* setup */
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    LoginRequest request = new LoginRequest("am@mail.com", "asd");
+    /* tests */
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+    deleteAll();
+  }
+
+  @Test
+  void givenValidCred_assert200() throws Exception {
+    /* setup */
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    User user =
+        createUser(
+            areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    /* tests */
+    String cookie =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    JwtClaimDTO jwtClaimDTO = jwtUtil.validateJwt(cookie);
+    assertEquals(user.getId().toString(), jwtClaimDTO.userId().toString());
+    assertEquals(user.getEmail(), jwtClaimDTO.email());
+    assertEquals(user.getRole().getId().toString(), jwtClaimDTO.roleId().toString());
+    assertEquals(user.getRole().getValue(), jwtClaimDTO.roleName());
+    assertEquals(user.getFullName(), jwtClaimDTO.fullName());
+    deleteAll();
   }
 }

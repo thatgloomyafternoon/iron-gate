@@ -2,83 +2,149 @@ package com.fw.irongate.web.api;
 
 import static com.fw.irongate.constants.SystemConstants.COOKIE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fw.irongate.models.dto.JwtClaimDTO;
-import com.fw.irongate.usecases.logout.LogoutUseCase;
-import com.fw.irongate.web.responses.MessageResponse;
-import com.github.f4b6a3.uuid.UuidCreator;
-import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.Assertions;
+import com.fw.irongate.models.entities.Sysconfig;
+import com.fw.irongate.models.entities.SysconfigType;
+import com.fw.irongate.usecases.login.LoginRequest;
+import jakarta.servlet.http.Cookie;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 
-@ExtendWith(MockitoExtension.class)
-class TestAuthController {
-
-  @Mock private LogoutUseCase logoutUseCase;
-
-  @Mock private HttpServletResponse httpServletResponse;
-
-  @InjectMocks private AuthController authController;
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource("classpath:application-test.properties")
+class TestApiAuthLogout extends TestParent {
 
   @Test
-  void logout_ShouldSetHeaderAndReturnOk_WhenRequestIsValid() {
-    /* 1. Arrange */
-    String jwtToken = "valid.jwt.token";
-    JwtClaimDTO claimDTO =
-        new JwtClaimDTO(
-            UuidCreator.getTimeOrderedEpoch(),
-            "user@example.com",
-            UuidCreator.getTimeOrderedEpoch(),
-            "role",
-            "full name");
-    /* Create a REAL ResponseCookie object to return from the mock */
-    /* This ensures .toString() behaves exactly as Spring intends */
-    ResponseCookie emptyCookie = ResponseCookie.from(COOKIE_NAME, "").maxAge(0).build();
-    when(logoutUseCase.handle(claimDTO, jwtToken)).thenReturn(emptyCookie);
-    /* 2. Act */
-    ResponseEntity<MessageResponse> response =
-        authController.logout(claimDTO, jwtToken, httpServletResponse);
-    /* 3. Assert */
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    Assertions.assertNotNull(response.getBody());
-    /* Verify the response header was set with the cookie string */
-    verify(httpServletResponse, times(1)).addHeader(HttpHeaders.SET_COOKIE, emptyCookie.toString());
+  void givenNoCookie_assert403() throws Exception {
+    /* test */
+    mockMvc
+        .perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
   }
 
   @Test
-  void logout_ShouldPropagateException_WhenUseCaseFails() {
-    /* 1. Arrange */
-    String jwtToken = "broken.token";
-    JwtClaimDTO claimDTO =
-        new JwtClaimDTO(
-            UuidCreator.getTimeOrderedEpoch(),
-            "user@example.com",
-            UuidCreator.getTimeOrderedEpoch(),
-            "role",
-            "full name");
-    /* Simulate a fatal error in the use case */
-    when(logoutUseCase.handle(claimDTO, jwtToken)).thenThrow(new RuntimeException("Database down"));
-    /* 2. Act & Assert */
-    RuntimeException thrown =
-        assertThrows(
-            RuntimeException.class,
-            () -> authController.logout(claimDTO, jwtToken, httpServletResponse));
-    assertEquals("Database down", thrown.getMessage());
-    /* Verify we never touched the response headers */
-    verify(httpServletResponse, Mockito.never())
-        .addHeader(Mockito.anyString(), Mockito.anyString());
+  void givenIncorrectCookieName_assert403() throws Exception {
+    /* setup */
+    Cookie cookie = new Cookie("cookie", "asdfghjkl");
+    /* test */
+    mockMvc
+        .perform(post("/api/auth/logout").cookie(cookie).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void givenNoPermission_assert403() throws Exception {
+    /* setup */
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    String cookieValue =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    Cookie cookie = new Cookie(COOKIE_NAME, cookieValue);
+    /* test */
+    mockMvc
+        .perform(post("/api/auth/logout").cookie(cookie).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+    deleteAll();
+  }
+
+  @Test
+  void givenCookieAndPermission_assert200_andReturnNoCookie() throws Exception {
+    /* setup */
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    SysconfigType resourcePath = createSysconfigType("RESOURCE_PATH", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    Sysconfig apiAuthLogout = createSysconfig(resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    createPermission(areaManager, apiAuthLogout);
+    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    String cookieValue1 =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    Cookie cookie = new Cookie(COOKIE_NAME, cookieValue1);
+    /* test */
+    String cookieValue2 =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/logout")
+                            .cookie(cookie)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    assertEquals("", cookieValue2);
+    assertEquals(1, revokedTokenRepository.findAll().size());
+    assertEquals(cookieValue1, revokedTokenRepository.findAll().getFirst().getJwt());
+    deleteAll();
+  }
+
+  @Test
+  void givenAlreadyLoggedOut_assert401() throws Exception {
+    /* setup */
+    SysconfigType role = createSysconfigType("ROLE", "description");
+    SysconfigType resourcePath = createSysconfigType("RESOURCE_PATH", "description");
+    Sysconfig areaManager = createSysconfig(role, "AREA_MANAGER", "Area Manager");
+    Sysconfig apiAuthLogout = createSysconfig(resourcePath, "API_AUTH_LOGOUT", "/api/auth/logout");
+    createUser(areaManager, "am@mail.com", bCryptPasswordEncoder.encode("password"), "full name");
+    createPermission(areaManager, apiAuthLogout);
+    LoginRequest request = new LoginRequest("am@mail.com", "password");
+    String cookieValue1 =
+        Objects.requireNonNull(
+                mockMvc
+                    .perform(
+                        post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists(COOKIE_NAME))
+                    .andReturn()
+                    .getResponse()
+                    .getCookie(COOKIE_NAME))
+            .getValue();
+    Cookie cookie = new Cookie(COOKIE_NAME, cookieValue1);
+    /* test */
+    mockMvc
+        .perform(post("/api/auth/logout").cookie(cookie).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(post("/api/auth/logout").cookie(cookie).contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized());
+    deleteAll();
   }
 }

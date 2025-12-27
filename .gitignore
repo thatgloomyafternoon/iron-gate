@@ -2,3 +2,5 @@
 .gradle/
 build/
 application-local.yml
+GEMINI.md
+TO-DO.md

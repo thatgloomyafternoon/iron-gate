@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class ErrorControllerAdvice {
+public class ExceptionControllerAdvice {
 
   @ExceptionHandler({IllegalArgumentException.class})
   @ResponseBody

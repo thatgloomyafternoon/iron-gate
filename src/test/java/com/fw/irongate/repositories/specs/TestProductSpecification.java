@@ -26,14 +26,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
-class ProductSpecificationTest {
+class TestProductSpecification {
 
   @Mock private Root<Product> root;
   @Mock private CriteriaQuery<?> query;
   @Mock private CriteriaBuilder cb;
   @Mock private Path<String> stringPath;
   @Mock private Path<BigDecimal> pricePath;
-  @Mock private Path<Integer> quantityPath;
   @Mock private Predicate predicate;
   @Mock private Expression<String> lowerExpression;
 
@@ -45,14 +44,13 @@ class ProductSpecificationTest {
     lenient().when(root.<String>get("sku")).thenReturn(stringPath);
     lenient().when(root.<String>get("description")).thenReturn(stringPath);
     lenient().when(root.<BigDecimal>get("price")).thenReturn(pricePath);
-    lenient().when(root.<Integer>get("quantity")).thenReturn(quantityPath);
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void shouldReturnEmptyPredicate_WhenRequestIsEmpty() {
     /* Arrange */
-    FilterProductRequest request = new FilterProductRequest(null, null, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest(null, null, null, 0, 10);
     Specification<Product> spec = ProductSpecification.getSpecification(request);
     /* Act */
     spec.toPredicate(root, query, cb);
@@ -67,7 +65,7 @@ class ProductSpecificationTest {
   void shouldFilterByQuery_WhenQueryIsPresent() {
     /* Arrange */
     String search = "apple";
-    FilterProductRequest request = new FilterProductRequest(search, null, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest(search, null, null, 0, 10);
     /* Mock string operations */
     when(cb.lower(stringPath)).thenReturn(lowerExpression);
     when(cb.like(eq(lowerExpression), eq("%apple%"))).thenReturn(predicate);
@@ -88,7 +86,7 @@ class ProductSpecificationTest {
   @Test
   void shouldNotFilterByQuery_WhenQueryIsBlank() {
     /* Arrange */
-    FilterProductRequest request = new FilterProductRequest("   ", null, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest("   ", null, null, 0, 10);
     Specification<Product> spec = ProductSpecification.getSpecification(request);
     /* Act */
     spec.toPredicate(root, query, cb);
@@ -100,7 +98,7 @@ class ProductSpecificationTest {
   void shouldFilterByMinPrice_WhenMinPriceIsPresent() {
     /* Arrange */
     BigDecimal minPrice = BigDecimal.TEN;
-    FilterProductRequest request = new FilterProductRequest(null, minPrice, null, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest(null, minPrice, null, 0, 10);
     Specification<Product> spec = ProductSpecification.getSpecification(request);
     /* Act */
     spec.toPredicate(root, query, cb);
@@ -113,7 +111,7 @@ class ProductSpecificationTest {
   void shouldFilterByMaxPrice_WhenMaxPriceIsPresent() {
     /* Arrange */
     BigDecimal maxPrice = new BigDecimal("100.00");
-    FilterProductRequest request = new FilterProductRequest(null, null, maxPrice, null, 0, 10);
+    FilterProductRequest request = new FilterProductRequest(null, null, maxPrice, 0, 10);
     Specification<Product> spec = ProductSpecification.getSpecification(request);
     /* Act */
     spec.toPredicate(root, query, cb);
@@ -123,31 +121,17 @@ class ProductSpecificationTest {
   }
 
   @Test
-  void shouldFilterByMinQuantity_WhenMinQuantityIsPresent() {
-    /* Arrange */
-    Integer minQty = 5;
-    FilterProductRequest request = new FilterProductRequest(null, null, null, minQty, 0, 10);
-    Specification<Product> spec = ProductSpecification.getSpecification(request);
-    /* Act */
-    spec.toPredicate(root, query, cb);
-    /* Assert */
-    verify(root).get("quantity");
-    verify(cb).greaterThanOrEqualTo(quantityPath, minQty);
-  }
-
-  @Test
   void shouldCombineAllFilters_WhenAllFieldsArePresent() {
     /* Arrange */
     FilterProductRequest request =
-        new FilterProductRequest("test", BigDecimal.ONE, BigDecimal.TEN, 5, 0, 10);
+        new FilterProductRequest("test", BigDecimal.ONE, BigDecimal.TEN, 0, 10);
     /* Mock string ops again for the query part */
     when(cb.lower(stringPath)).thenReturn(lowerExpression);
     when(cb.like(any(), anyString())).thenReturn(predicate);
     when(cb.or(any(), any(), any())).thenReturn(predicate);
-    /* Mock return for price/qty predicates so they can be bundled into the final AND */
+    /* Mock return for price/qty predicates so, they can be bundled into the final AND */
     when(cb.greaterThanOrEqualTo(eq(pricePath), any(BigDecimal.class))).thenReturn(predicate);
     when(cb.lessThanOrEqualTo(eq(pricePath), any(BigDecimal.class))).thenReturn(predicate);
-    when(cb.greaterThanOrEqualTo(eq(quantityPath), any(Integer.class))).thenReturn(predicate);
     Specification<Product> spec = ProductSpecification.getSpecification(request);
     /* Act */
     spec.toPredicate(root, query, cb);
@@ -156,7 +140,6 @@ class ProductSpecificationTest {
     verify(cb).or(any(), any(), any());
     verify(cb).greaterThanOrEqualTo(pricePath, BigDecimal.ONE);
     verify(cb).lessThanOrEqualTo(pricePath, BigDecimal.TEN);
-    verify(cb).greaterThanOrEqualTo(quantityPath, 5);
     /* Verify final combination. */
     /* We expect 4 predicates (1 OR group + 3 explicit filters) passed to the final AND */
     /* Note: The implementation converts List<Predicate> to array. */
