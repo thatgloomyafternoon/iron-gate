@@ -23,4 +23,12 @@ public interface OrderRepository
           + "WHERE o.deletedAt IS NULL "
           + "GROUP BY o.status")
   List<ChartDataDTO> countOrdersByStatus();
+
+  @Query(
+      "SELECT new com.fw.irongate.models.dto.ChartDataDTO(o.warehouse.name, SUM(o.totalPrice)) "
+          + "FROM Order o "
+          + "WHERE o.status = 'COMPLETED' AND o.deletedAt IS NULL "
+          + "GROUP BY o.warehouse.name "
+          + "ORDER BY SUM(o.totalPrice) DESC")
+  List<ChartDataDTO> findTopRevenueByWarehouse(org.springframework.data.domain.Pageable pageable);
 }
