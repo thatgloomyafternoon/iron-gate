@@ -57,8 +57,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/auth/login")
                     .permitAll()
+                    .requestMatchers("/api/**")
+                    .authenticated()
                     .anyRequest()
-                    .authenticated());
+                    .permitAll());
     httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     return httpSecurity.build();
   }
