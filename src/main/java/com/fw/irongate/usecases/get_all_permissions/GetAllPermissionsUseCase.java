@@ -27,7 +27,8 @@ public class GetAllPermissionsUseCase {
                 Collectors.mapping(p -> p.getResourcePath().getValue(), Collectors.toList())))
         .entrySet()
         .stream()
-        .map(entry -> new PermissionDTO(entry.getKey(), entry.getValue()))
+        .map(
+            entry -> new PermissionDTO(entry.getKey(), entry.getValue().stream().sorted().toList()))
         .sorted(Comparator.comparing(PermissionDTO::roleName))
         .toList();
   }
