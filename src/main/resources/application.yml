@@ -18,6 +18,17 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+
 jwt:
   secret: ${JWT_SECRET}
   expiry_in_millisecond: ${JWT_EXPIRY_IN_MILLISECOND}
