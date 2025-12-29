@@ -4,10 +4,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping(value = "/{path:[^\\.]*}")
 public class ViewController {
 
-  @SuppressWarnings("unused")
+  @RequestMapping(value = {"/{path:[^\\.]*}", "/**/{path:[^\\.]*}"})
   public String redirect() {
     return "forward:/index.html";
   }

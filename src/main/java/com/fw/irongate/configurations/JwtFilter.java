@@ -92,6 +92,7 @@ public class JwtFilter extends OncePerRequestFilter {
           setResponseStatusAndJson(response, HttpServletResponse.SC_BAD_REQUEST, JSON_INVALID_ROLE);
           return;
         } else if (!optSysconfig.get().getKey().equals(SYSTEM)
+            && uri.startsWith("/api/")
             && permissionRepository
                 .findAllActiveByRoleIdAndResourcePath(jwtClaimDTO.roleId(), uri)
                 .isEmpty()) {
