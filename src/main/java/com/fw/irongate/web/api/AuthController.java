@@ -49,6 +49,12 @@ public class AuthController {
     return ResponseEntity.ok(new MessageResponse((OK)));
   }
 
+  /**
+   * This will be hit from the login page, to confirm if there is an active user logged in or not.
+   * The frontend will get 403 if there is no user logged in.<br>
+   * This is standard behavior for Single Page Applications (SPAs) with session persistence.
+   * The 403 is "expected" in the sense that it simply confirms "No, there is no active user."
+   */
   @GetMapping("/me")
   public ResponseEntity<UserDTO> me(@AuthenticationPrincipal JwtClaimDTO jwtClaimDTO) {
     return ResponseEntity.ok(
