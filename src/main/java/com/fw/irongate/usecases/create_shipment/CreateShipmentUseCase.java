@@ -78,6 +78,11 @@ public class CreateShipmentUseCase {
     if (optDestWarehouse.isEmpty()) {
       throw new IllegalArgumentException(DEST_WAREHOUSE_NOT_FOUND);
     }
+    Warehouse destWarehouse = optDestWarehouse.get();
+    /* check if origin warehouse id == dest warehouse id */
+    if (stock.getWarehouse().getId().toString().equals(destWarehouse.getId().toString())) {
+      throw new IllegalArgumentException(OPERATION_NOT_PERMITTED);
+    }
     /* create shipment */
     Shipment shipment = new Shipment();
     shipment.setCreatedBy(jwtClaimDTO.email());
