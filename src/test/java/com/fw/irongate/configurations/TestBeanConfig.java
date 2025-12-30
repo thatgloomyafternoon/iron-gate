@@ -2,6 +2,7 @@ package com.fw.irongate.configurations;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import com.auth0.jwt.JWTVerifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class TestBeanConfig {
 
   private final ApplicationContextRunner contextRunner =
-      new ApplicationContextRunner().withUserConfiguration(BeanConfig.class);
+      new ApplicationContextRunner()
+          .withUserConfiguration(BeanConfig.class)
+          .withBean(JwtFilter.class, () -> mock(JwtFilter.class));
 
   @Test
   void shouldRegisterJWTVerifier() {
