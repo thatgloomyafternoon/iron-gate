@@ -12,7 +12,7 @@ class TestStreamDashboardUseCase {
 
   @Test
   void subscribe_ShouldReturnEmitter() {
-    SseEmitter emitter = streamDashboardUseCase.subscribe();
+    SseEmitter emitter = streamDashboardUseCase.subscribe("user1");
     assertNotNull(emitter);
   }
 
@@ -25,7 +25,7 @@ class TestStreamDashboardUseCase {
 
   @Test
   void broadcast_ShouldSendToEmitters() {
-    streamDashboardUseCase.subscribe();
+    streamDashboardUseCase.subscribe("user1");
     DashboardEventDTO event = new DashboardEventDTO("test");
     streamDashboardUseCase.broadcast(event);
     /* Logic for verifying SSE send is complex, but this tests the loop doesn't crash */
@@ -33,7 +33,7 @@ class TestStreamDashboardUseCase {
 
   @Test
   void sendHeartbeat_ShouldNotThrowException() {
-    streamDashboardUseCase.subscribe();
+    streamDashboardUseCase.subscribe("user1");
     streamDashboardUseCase.sendHeartbeat();
     /* Logic for verifying SSE send is complex, but this tests the loop doesn't crash */
   }
