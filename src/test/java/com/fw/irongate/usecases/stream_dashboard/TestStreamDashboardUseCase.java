@@ -20,7 +20,7 @@ class TestStreamDashboardUseCase {
   void broadcast_ShouldNotThrowException_WhenNoEmitters() {
     DashboardEventDTO event = new DashboardEventDTO("test");
     streamDashboardUseCase.broadcast(event);
-    // Success if no exception thrown
+    /* Success if no exception thrown */
   }
 
   @Test
@@ -28,6 +28,13 @@ class TestStreamDashboardUseCase {
     streamDashboardUseCase.subscribe();
     DashboardEventDTO event = new DashboardEventDTO("test");
     streamDashboardUseCase.broadcast(event);
-    // Logic for verifying SSE send is complex, but this tests the loop doesn't crash
+    /* Logic for verifying SSE send is complex, but this tests the loop doesn't crash */
+  }
+
+  @Test
+  void sendHeartbeat_ShouldNotThrowException() {
+    streamDashboardUseCase.subscribe();
+    streamDashboardUseCase.sendHeartbeat();
+    /* Logic for verifying SSE send is complex, but this tests the loop doesn't crash */
   }
 }

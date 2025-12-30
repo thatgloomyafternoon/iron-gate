@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -38,6 +39,20 @@ public class StreamDashboardUseCase {
         } else {
           log.warn("Failed to send event to emitter, removing it.", e);
         }
+      }
+    }
+    emitters.removeAll(deadEmitters);
+  }
+
+  @Scheduled(fixedRate = 25000)
+  public void sendHeartbeat() {
+    List<SseEmitter> deadEmitters = new CopyOnWriteArrayList<>();
+    for (SseEmitter emitter : emitters) {
+      try {
+        emitter.send(SseEmitter.event().comment("heartbeat"));
+      } catch (Exception e) {
+        deadEmitters.add(emitter);
+        log.debug("Failed to send heartbeat, removing emitter: {}", e.getMessage());
       }
     }
     emitters.removeAll(deadEmitters);
