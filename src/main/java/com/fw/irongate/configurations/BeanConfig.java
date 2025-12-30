@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.security.SecureRandom;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -45,5 +46,12 @@ public class BeanConfig {
     threadPoolTaskScheduler.setThreadNamePrefix("shipment-timer-");
     threadPoolTaskScheduler.initialize();
     return threadPoolTaskScheduler;
+  }
+
+  @Bean
+  public FilterRegistrationBean<JwtFilter> jwtFilterRegistration(JwtFilter filter) {
+    FilterRegistrationBean<JwtFilter> registration = new FilterRegistrationBean<>(filter);
+    registration.setEnabled(false);
+    return registration;
   }
 }

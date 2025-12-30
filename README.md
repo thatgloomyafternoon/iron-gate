@@ -1,7 +1,7 @@
 ### Tech Stack
 - Java 21
-- Spring Boot 3.5.8
-- Spring SSE 6.2.14
+- Spring Boot 3.4.13
+- Spring SSE 6.2.15
 - Hibernate 6.6.36
 - PostgreSQL 14
 - JUnit 5.12.2
