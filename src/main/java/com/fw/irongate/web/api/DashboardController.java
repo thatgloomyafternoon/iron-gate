@@ -23,9 +23,21 @@ public class DashboardController {
     this.getDashboardChartsUseCase = getDashboardChartsUseCase;
   }
 
+  /**
+   * ERROR: GET https://gloomyafternoon.xyz/api/dashboard/stream net::ERR_INCOMPLETE_CHUNKED_ENCODING 200 (OK)<br><br>
+   * The <code>ERR_INCOMPLETE_CHUNKED_ENCODING</code> error with SSE (Server-Sent Events) usually indicates that an intermediate proxy,
+   * such as Nginx, is buffering the response.<br><br>
+   * SSE requires a continuous stream of data. If Nginx buffers the chunks instead of passing them to the browser
+   * immediately, the connection can time out or appear "incomplete" to the client.<br><br>
+   * It is recommended to add the <code>X-Accel-Buffering: no</code> header to the <code>/api/dashboard/stream</code> response.
+   * This header specifically tells Nginx to disable buffering for this request, allowing the SSE events to flow
+   * through in real-time.
+   */
   @GetMapping("/stream")
-  public SseEmitter stream() {
-    return streamDashboardUseCase.subscribe();
+  public ResponseEntity<SseEmitter> stream() {
+    return ResponseEntity.ok()
+        .header("X-Accel-Buffering", "no")
+        .body(streamDashboardUseCase.subscribe());
   }
 
   @GetMapping("/charts")

@@ -1,5 +1,6 @@
 package com.fw.irongate.web.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +26,11 @@ class TestApiDashboardStream {
     when(streamDashboardUseCase.subscribe()).thenReturn(expectedEmitter);
 
     /* 2. Act */
-    SseEmitter result = dashboardController.stream();
+    ResponseEntity<SseEmitter> result = dashboardController.stream();
 
     /* 3. Assert */
     assertNotNull(result);
+    assertEquals(expectedEmitter, result.getBody());
+    assertEquals("no", result.getHeaders().getFirst("X-Accel-Buffering"));
   }
 }
