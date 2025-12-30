@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.entities.RevokedToken;
 import com.fw.irongate.repositories.RevokedTokenRepository;
+import com.fw.irongate.usecases.stream_dashboard.StreamDashboardUseCase;
 import com.fw.irongate.utils.CookieUtil;
 import com.fw.irongate.utils.JwtUtil;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -29,6 +30,7 @@ class TestLogoutUseCase {
   @Mock private JwtUtil jwtUtil;
   @Mock private RevokedTokenRepository revokedTokenRepository;
   @Mock private CookieUtil cookieUtil;
+  @Mock private StreamDashboardUseCase streamDashboardUseCase;
   @InjectMocks private LogoutUseCase logoutUseCase;
   @Captor private ArgumentCaptor<RevokedToken> revokedTokenCaptor;
 
@@ -57,6 +59,7 @@ class TestLogoutUseCase {
     assertEquals(expectedCookie, result);
     /* Verify repository save was called */
     verify(revokedTokenRepository).save(revokedTokenCaptor.capture());
+    verify(streamDashboardUseCase).removeUser(claimDTO.userId().toString());
     /* Check the internal state of the saved object */
     RevokedToken capturedToken = revokedTokenCaptor.getValue();
     assertEquals(token, capturedToken.getJwt());

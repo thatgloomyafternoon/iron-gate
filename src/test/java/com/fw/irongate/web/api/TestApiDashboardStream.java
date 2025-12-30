@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
+import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.usecases.stream_dashboard.StreamDashboardUseCase;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,11 +25,12 @@ class TestApiDashboardStream {
   void stream_ShouldReturnSseEmitter() {
     /* 1. Arrange */
     SseEmitter expectedEmitter = new SseEmitter();
-    when(streamDashboardUseCase.subscribe()).thenReturn(expectedEmitter);
-
+    UUID userId = UUID.randomUUID();
+    JwtClaimDTO jwtClaimDTO =
+        new JwtClaimDTO(userId, "test@email.com", UUID.randomUUID(), "ROLE_USER", "Test User");
+    when(streamDashboardUseCase.subscribe(userId.toString())).thenReturn(expectedEmitter);
     /* 2. Act */
-    ResponseEntity<SseEmitter> result = dashboardController.stream();
-
+    ResponseEntity<SseEmitter> result = dashboardController.stream(jwtClaimDTO);
     /* 3. Assert */
     assertNotNull(result);
     assertEquals(expectedEmitter, result.getBody());

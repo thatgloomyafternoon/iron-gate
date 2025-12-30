@@ -6,6 +6,7 @@ import com.fw.irongate.models.dto.JwtClaimDTO;
 import com.fw.irongate.models.entities.RevokedToken;
 import com.fw.irongate.repositories.RevokedTokenRepository;
 import com.fw.irongate.usecases.UseCase;
+import com.fw.irongate.usecases.stream_dashboard.StreamDashboardUseCase;
 import com.fw.irongate.utils.CookieUtil;
 import com.fw.irongate.utils.JwtUtil;
 import java.time.Instant;
@@ -20,12 +21,17 @@ public class LogoutUseCase {
   private final RevokedTokenRepository revokedTokenRepository;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
+  private final StreamDashboardUseCase streamDashboardUseCase;
 
   public LogoutUseCase(
-      RevokedTokenRepository revokedTokenRepository, JwtUtil jwtUtil, CookieUtil cookieUtil) {
+      RevokedTokenRepository revokedTokenRepository,
+      JwtUtil jwtUtil,
+      CookieUtil cookieUtil,
+      StreamDashboardUseCase streamDashboardUseCase) {
     this.revokedTokenRepository = revokedTokenRepository;
     this.jwtUtil = jwtUtil;
     this.cookieUtil = cookieUtil;
+    this.streamDashboardUseCase = streamDashboardUseCase;
   }
 
   public ResponseCookie handle(JwtClaimDTO jwtClaimDTO, String jwt) {
@@ -35,6 +41,7 @@ public class LogoutUseCase {
       revokedToken.setCreatedBy(jwtClaimDTO.email());
       revokedToken.setUpdatedBy(jwtClaimDTO.email());
       revokedTokenRepository.save(revokedToken);
+      streamDashboardUseCase.removeUser(jwtClaimDTO.userId().toString());
     } catch (Exception e) {
       log.warn(USER_ALREADY_LOGGED_OUT, jwtClaimDTO.email());
     }
