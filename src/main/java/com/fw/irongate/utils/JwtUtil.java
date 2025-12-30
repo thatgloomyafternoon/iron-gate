@@ -1,6 +1,5 @@
 package com.fw.irongate.utils;
 
-import static com.fw.irongate.constants.MessageConstants.INVALID_JWT;
 import static com.fw.irongate.constants.SystemConstants.JWT_CLAIM_KEY_USER_EMAIL;
 import static com.fw.irongate.constants.SystemConstants.JWT_CLAIM_KEY_USER_FULL_NAME;
 import static com.fw.irongate.constants.SystemConstants.JWT_CLAIM_KEY_USER_ID;
@@ -60,7 +59,7 @@ public class JwtUtil {
           decodedJWT.getClaim(JWT_CLAIM_KEY_USER_ROLE_NAME).asString(),
           decodedJWT.getClaim(JWT_CLAIM_KEY_USER_FULL_NAME).asString());
     } catch (Exception e) {
-      throw new RuntimeException(INVALID_JWT);
+      return null;
     }
   }
 
