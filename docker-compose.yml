@@ -84,6 +84,15 @@ services:
       - app-network
     restart: always
 
+  ddns:
+    image: favonia/cloudflare-ddns:latest
+    environment:
+      - API_TOKEN=CfQgs0iAJQneAXKKaXcAYNEDlKMBr2bQbSwVGspi
+      - DOMAINS=gloomyafternoon.xyz
+      - PROXIED=true
+      - IP6_PROVIDER=none
+    restart: always
+
 networks:
   app-network:
     driver: bridge
