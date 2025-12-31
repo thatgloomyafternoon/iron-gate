@@ -86,8 +86,9 @@ services:
 
   ddns:
     image: favonia/cloudflare-ddns:latest
+    container_name: iron-gate-ddns
     environment:
-      - API_TOKEN=CfQgs0iAJQneAXKKaXcAYNEDlKMBr2bQbSwVGspi
+      - API_TOKEN=${CF_API_TOKEN}
       - DOMAINS=gloomyafternoon.xyz
       - PROXIED=true
       - IP6_PROVIDER=none
