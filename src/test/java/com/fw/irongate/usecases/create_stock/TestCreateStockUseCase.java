@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import com.fw.irongate.models.entities.WarehouseUser;
 import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.repositories.StockRepository;
 import com.fw.irongate.repositories.WarehouseUserRepository;
+import com.fw.irongate.usecases.stream_dashboard.StreamDashboardUseCase;
 import com.fw.irongate.web.responses.IdResponse;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigInteger;
@@ -39,6 +41,7 @@ class TestCreateStockUseCase {
   @Mock private WarehouseUserRepository warehouseUserRepository;
   @Mock private ProductRepository productRepository;
   @Mock private StockRepository stockRepository;
+  @Mock private StreamDashboardUseCase streamDashboardUseCase;
   @InjectMocks private CreateStockUseCase createStockUseCase;
 
   private JwtClaimDTO jwtClaimDTO;
@@ -78,6 +81,7 @@ class TestCreateStockUseCase {
               s.setId(UuidCreator.getTimeOrderedEpoch());
               return s;
             });
+    doNothing().when(streamDashboardUseCase).broadcast(any());
     /* 2. Act */
     IdResponse response = createStockUseCase.handle(jwtClaimDTO, request);
     /* 3. Assert */
@@ -113,6 +117,7 @@ class TestCreateStockUseCase {
         .thenReturn(Optional.of(existingStock));
     when(stockRepository.save(any(Stock.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
+    doNothing().when(streamDashboardUseCase).broadcast(any());
     /* 2. Act */
     IdResponse response = createStockUseCase.handle(jwtClaimDTO, request);
     /* 3. Assert */
