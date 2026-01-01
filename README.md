@@ -5,6 +5,8 @@ This is a simple, full-stack Supply Chain Management (SCM) system designed to ma
 **Java 21 (Spring Boot)** and **React 19 (TypeScript)**, it is a production-ready application deployed as a containerized environment
 on **Amazon EC2**, including an observability stack.
 
+![iron-gate-diagram](images/iron-gate.png)
+
 ## Key Features
 ### 1. Role-Based Access Control (RBAC)
 Access to APIs and UI components is strictly governed by user roles:
