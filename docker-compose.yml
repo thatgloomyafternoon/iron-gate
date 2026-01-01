@@ -1,4 +1,7 @@
 services:
+  #-------------------------------------------------------------
+  # 1. Java Spring Boot + React TypeScript
+  #-------------------------------------------------------------
   app:
     build: .
     container_name: iron-gate-app
@@ -17,6 +20,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 2. PostgreSQL Database
+  #-------------------------------------------------------------
   db:
     image: postgres:14-alpine
     container_name: iron-gate-db
@@ -32,6 +38,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 3. Loki (Log Storage)
+  #-------------------------------------------------------------
   loki:
     image: grafana/loki:2.9.2
     container_name: loki
@@ -42,6 +51,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 4. Promtail (Log Shipper)
+  #-------------------------------------------------------------
   promtail:
     image: grafana/promtail:2.9.2
     container_name: promtail
@@ -56,6 +68,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 5. Prometheus (Metrics Storage)
+  #-------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -67,6 +82,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 6. Grafana (Monitoring Dashboard UI)
+  #-------------------------------------------------------------
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -84,6 +102,9 @@ services:
       - app-network
     restart: always
 
+  #-------------------------------------------------------------
+  # 7. Cloudflare DDNS
+  #-------------------------------------------------------------
   ddns:
     image: favonia/cloudflare-ddns:latest
     container_name: iron-gate-ddns
