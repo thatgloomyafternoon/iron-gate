@@ -22,6 +22,15 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.scheduling.TaskScheduler;
 
+/**
+ * Important Limitation:<br>
+ * This UseCase uses In-Memory Scheduling.<br>
+ * <b>The Risk:</b> If the Java application is restarted (or EC2 kills the container) while the 10-second timer is ticking,
+ * that task is lost forever. The shipment will stay IN_DELIVERY.<br><br>
+ * The Enterprise Fix: In a real production system where money is involved, we would use a library like JobRunr or Quartz
+ * to save the job to the database. If the server crashes, it resumes the job when it comes back online.
+ * Please take note of this limitation.
+ */
 @UseCase
 public class AssignMyselfShipmentUseCase {
 
