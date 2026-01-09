@@ -8,6 +8,14 @@ import com.fw.irongate.repositories.ProductRepository;
 import com.fw.irongate.usecases.UseCase;
 import com.fw.irongate.web.responses.IdResponse;
 
+/**
+ * <p>
+ *   This use case is used to create a product.
+ *   A product does not necessarily have a warehouse where
+ *   it is stored. If you are looking for product-to-warehouse
+ *   mapping, please refer to <code>Stock</code>.
+ * </p>
+ */
 @UseCase
 public class CreateProductUseCase {
 

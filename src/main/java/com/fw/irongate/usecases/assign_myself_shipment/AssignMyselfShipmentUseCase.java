@@ -23,18 +23,39 @@ import java.util.UUID;
 import org.springframework.scheduling.TaskScheduler;
 
 /**
- * Important Limitation:
  * <p>
- * This UseCase uses <b>In-Memory Scheduling</b>.
+ *   This use case is used by warehouse driver to assign themselves to a shipment.
+ *   It will:
+ * </p>
+ * <ul>
+ *   <li>check if the shipment exists</li>
+ *   <li>check if the shipment is in PENDING state</li>
+ *   <li>
+ *     check if the user picking up the shipment (a.k.a the driver)
+ *     is a driver belongs to the origin warehouse
+ *   </li>
+ *   <li>
+ *     check if the driver is currently assigned to
+ *     another ongoing shipment
+ *   </li>
+ * </ul>
  * <p>
- * <b>The Risk:</b> If the Java application is restarted (or EC2 kills the container)
- * while the 10-second timer is ticking, that task is lost forever.
- * The shipment will stay <code>IN_DELIVERY</code>.
+ *   After all checks are done, it will start processing the shipment and start the
+ *   task scheduler to simulate the shipment being delivered.
+ * </p>
+ * <p>Important Limitation:</p>
+ * <p>This UseCase uses <b>In-Memory Scheduling</b>.</p>
  * <p>
- * <b>The Enterprise Fix:</b> In a real production system where money is involved,
- * we would use a library like <b>JobRunr</b> or <b>Quartz</b> to save the job to the database.
- * If the server crashes, it resumes the job when it comes back online.
- * Please take note of this limitation.
+ *   <b>The Risk:</b> If the Java application is restarted (or EC2 kills the container)
+ *   while the 10-second timer is ticking, that task is lost forever.
+ *   The shipment will stay <code>IN_DELIVERY</code>.
+ * </p>
+ * <p>
+ *   <b>The Enterprise Fix:</b> In a real production system where money is involved,
+ *   we would use a library like <b>JobRunr</b> or <b>Quartz</b> to save the job to
+ *   the database. If the server crashes, it resumes the job when it comes back online.
+ * </p>
+ * <p>Please take note of this limitation.</p>
  */
 @UseCase
 public class AssignMyselfShipmentUseCase {
