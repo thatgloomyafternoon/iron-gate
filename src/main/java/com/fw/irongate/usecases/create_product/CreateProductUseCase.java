@@ -10,7 +10,7 @@ import com.fw.irongate.web.responses.IdResponse;
 
 /**
  * <p>
- *   This use case is used to create a product.
+ *   This use case is used to create a product. It will first search if the given SKU already exists or not, then proceed with the product creation itself.
  *   A product does not necessarily have a warehouse where
  *   it is stored. If you are looking for product-to-warehouse
  *   mapping, please refer to <code>Stock</code>.
